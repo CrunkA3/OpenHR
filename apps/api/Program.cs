@@ -22,7 +22,7 @@ builder.Services.AddHealthChecks()
 builder.Services.AddAuthentication("OpenHr.Session")
     .AddCookie("OpenHr.Session", options =>
     {
-        options.Cookie.Name = "__Host-openhr-session";
+        options.Cookie.Name = "openhr-session";
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
         options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
