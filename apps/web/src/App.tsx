@@ -16,8 +16,9 @@ type View = 'calendar' | 'requests' | 'approvals' | 'admin'
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, { ...init, credentials: 'include', headers: { 'Content-Type': 'application/json', ...init?.headers } })
   if (!response.ok) {
-    const error = await response.json().catch(() => null) as { title?: string } | null
-    throw new Error(error?.title ?? 'Die Anfrage konnte nicht verarbeitet werden.')
+    const error = await response.json().catch(() => null) as { title?: string; errors?: Record<string, string[]> } | null
+    const detail = error?.errors ? Object.values(error.errors).flat().join(' ') : undefined
+    throw new Error(detail || error?.title || 'Die Anfrage konnte nicht verarbeitet werden.')
   }
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
