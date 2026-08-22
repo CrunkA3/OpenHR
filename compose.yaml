@@ -1,0 +1,39 @@
+services:
+  database:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-openhr}
+      POSTGRES_USER: ${POSTGRES_USER:-openhr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment or .env file}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  api:
+    build:
+      context: ./apps/api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__OpenHrDatabase: Host=database;Port=5432;Database=${POSTGRES_DB:-openhr};Username=${POSTGRES_USER:-openhr};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment or .env file}
+      Cors__AllowedOrigins__0: ${WEB_ORIGIN:-http://localhost:8081}
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+
+  web:
+    build:
+      context: ./apps/web
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "8081:80"
+
+volumes:
+  postgres-data:
