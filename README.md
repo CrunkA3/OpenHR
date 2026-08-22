@@ -1,3 +1,5 @@
+[![CodeQL](https://github.com/CrunkA3/OpenHR/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/CrunkA3/OpenHR/actions/workflows/github-code-scanning/codeql)
+
 # OpenHR
 
 OpenHR ist eine deutsche, datensparsame HR-PWA für ein einzelnes Unternehmen.
