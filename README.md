@@ -18,10 +18,17 @@ Sie wird mit ASP.NET Core, React, PostgreSQL und Docker Compose entwickelt.
 1. In `apps\web` `npm run dev` starten.
 2. PostgreSQL bereitstellen und die Verbindungszeichenfolge
    `ConnectionStrings__OpenHrDatabase` setzen.
-3. In `apps\api` `dotnet run` starten.
+3. Für den ersten Start einen Administrator über die Umgebungsvariablen
+   `Bootstrap__Email`, `Bootstrap__DisplayName` und ein mindestens
+   zwölfstelliges `Bootstrap__Password` setzen und in `apps\api` `dotnet run`
+   starten. Der Bootstrap greift nur, solange noch kein Konto existiert.
 
-Für die containerisierte Referenzbereitstellung `POSTGRES_PASSWORD` setzen und
-anschließend `docker compose up --build` ausführen.
+Für die containerisierte Referenzbereitstellung zuerst `.env.example` nach
+`.env` kopieren und sämtliche Platzhalter durch eindeutige Geheimnisse
+ersetzen. Anschließend `docker compose up --build` ausführen. Die
+veröffentlichten HTTP-Ports sind nur für lokale Entwicklung geeignet; im
+Produktivbetrieb muss ein TLS-terminierender Reverse Proxy vorgeschaltet
+werden.
 
 `/health/live` prüft die Prozessverfügbarkeit; `/health/ready` prüft zusätzlich
 die Datenbankverbindung.

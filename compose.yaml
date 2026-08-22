@@ -20,6 +20,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__OpenHrDatabase: Host=database;Port=5432;Database=${POSTGRES_DB:-openhr};Username=${POSTGRES_USER:-openhr};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your environment or .env file}
       Cors__AllowedOrigins__0: ${WEB_ORIGIN:-http://localhost:8081}
+      Bootstrap__Email: ${OPENHR_BOOTSTRAP_EMAIL:?Set OPENHR_BOOTSTRAP_EMAIL in your environment or .env file}
+      Bootstrap__DisplayName: ${OPENHR_BOOTSTRAP_DISPLAY_NAME:?Set OPENHR_BOOTSTRAP_DISPLAY_NAME in your environment or .env file}
+      Bootstrap__Password: ${OPENHR_BOOTSTRAP_PASSWORD:?Set OPENHR_BOOTSTRAP_PASSWORD in your environment or .env file}
     depends_on:
       database:
         condition: service_healthy

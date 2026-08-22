@@ -5,6 +5,19 @@
   padding: 5rem 1.5rem;
 }
 
+.app-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-header > div:last-child {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: end;
+}
+
 .eyebrow {
   margin: 0 0 1rem;
   color: #0f766e;
@@ -48,4 +61,55 @@ ul {
   margin-bottom: 0;
   padding-left: 1.25rem;
   color: #334155;
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+input,
+select,
+button {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  border: 1px solid #94a3b8;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+}
+
+button {
+  width: fit-content;
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+  cursor: pointer;
+}
+
+button.secondary {
+  border-color: #64748b;
+  background: #fff;
+  color: #334155;
+  margin-left: 0.5rem;
+}
+
+.absence-form {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  align-items: end;
+}
+
+.error {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-left: 4px solid #b91c1c;
+  background: #fef2f2;
+  color: #991b1b;
 }
