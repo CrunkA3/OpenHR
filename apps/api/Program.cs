@@ -165,6 +165,46 @@ absence.MapGet("/mine", async (ClaimsPrincipal principal, OpenHrDbContext databa
     return Results.Ok(await database.AbsenceRequests.Include(request => request.AbsenceType)
         .Where(request => request.EmployeeId == employeeId).OrderByDescending(request => request.StartsOn).ToListAsync());
 });
+absence.MapGet("/calendar", async (DateOnly startsOn, DateOnly endsOn, ClaimsPrincipal principal, OpenHrDbContext database) =>
+{
+    if (startsOn > endsOn || endsOn.DayNumber - startsOn.DayNumber > 366)
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]> { ["period"] = ["Der Kalenderzeitraum ist ungültig."] });
+    }
+
+    var currentEmployee = await database.Employees.FindAsync(GetEmployeeId(principal));
+    if (currentEmployee is null) return Results.Unauthorized();
+
+    var requests = database.AbsenceRequests
+        .Include(request => request.Employee)
+        .Include(request => request.AbsenceType)
+        .Where(request => request.Status != AbsenceStatus.Rejected && request.StartsOn <= endsOn && request.EndsOn >= startsOn);
+
+    if (currentEmployee.Role == UserRole.Manager)
+    {
+        requests = requests.Where(request => request.EmployeeId == currentEmployee.Id || request.Employee!.ManagerId == currentEmployee.Id);
+    }
+    else if (currentEmployee.Role == UserRole.Employee)
+    {
+        requests = requests.Where(request => request.EmployeeId == currentEmployee.Id ||
+            currentEmployee.ManagerId != null && request.Employee!.ManagerId == currentEmployee.ManagerId);
+    }
+
+    var calendarEntries = await requests.OrderBy(request => request.StartsOn).Select(request => new
+    {
+        request.Id,
+        request.EmployeeId,
+        EmployeeName = request.Employee!.DisplayName,
+        request.StartsOn,
+        request.EndsOn,
+        IsOwn = request.EmployeeId == currentEmployee.Id,
+        AbsenceType = request.EmployeeId == currentEmployee.Id || currentEmployee.Role != UserRole.Employee
+            ? request.AbsenceType!.Name
+            : null,
+    }).ToListAsync();
+
+    return Results.Ok(calendarEntries);
+});
 absence.MapPost("/mine", async (CreateAbsenceInput input, ClaimsPrincipal principal, OpenHrDbContext database) =>
 {
     var employeeId = GetEmployeeId(principal);
