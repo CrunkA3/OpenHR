@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +17,10 @@ var connectionString = builder.Configuration.GetConnectionString("OpenHrDatabase
 
 builder.Services.AddDbContext<OpenHrDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddHealthChecks()
     .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"])
     .AddDbContextCheck<OpenHrDbContext>(tags: ["ready"]);
@@ -317,7 +322,7 @@ app.MapGet("/api/v1/notifications", [Authorize] async (ClaimsPrincipal principal
 app.Run();
 
 static Guid GetEmployeeId(ClaimsPrincipal principal) => Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
-static object ToEmployeeDto(Employee employee) => new { employee.Id, employee.DisplayName, employee.Email, employee.Role, employee.StartDate, employee.EndDate, employee.ManagerId, employee.VacationApprovalManagerId, employee.VacationEntitlementDays, employee.IsActive };
+static object ToEmployeeDto(Employee employee) => new { employee.Id, employee.DisplayName, employee.Email, Role = employee.Role.ToString(), employee.StartDate, employee.EndDate, employee.ManagerId, employee.VacationApprovalManagerId, employee.VacationEntitlementDays, employee.IsActive };
 static async Task<decimal> CountWorkdaysAsync(OpenHrDbContext database, DateOnly startsOn, DateOnly endsOn)
 {
     var excluded = await database.NonWorkingDays.Where(day => day.Date >= startsOn && day.Date <= endsOn).Select(day => day.Date).ToHashSetAsync();
