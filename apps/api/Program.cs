@@ -109,6 +109,11 @@ admin.MapGet("/employees", async (OpenHrDbContext database) =>
     var employees = await database.Employees.OrderBy(employee => employee.DisplayName).ToListAsync();
     return Results.Ok(employees.Select(ToEmployeeDto));
 });
+admin.MapGet("/employees/{id:guid}", async (Guid id, OpenHrDbContext database) =>
+{
+    var employee = await database.Employees.FindAsync(id);
+    return employee is null ? Results.NotFound() : Results.Ok(ToEmployeeDto(employee));
+});
 admin.MapPost("/employees", async (CreateEmployeeInput input, OpenHrDbContext database, IPasswordHasher<Employee> passwords) =>
 {
     if (string.IsNullOrWhiteSpace(input.DisplayName) || string.IsNullOrWhiteSpace(input.Email) || input.Password.Length < 12)
@@ -124,14 +129,64 @@ admin.MapPost("/employees", async (CreateEmployeeInput input, OpenHrDbContext da
 
     var employee = new Employee
     {
-        Id = Guid.NewGuid(), DisplayName = input.DisplayName.Trim(), Email = email, PasswordHash = string.Empty,
-        Role = input.Role, StartDate = input.StartDate, ManagerId = input.ManagerId,
-        VacationApprovalManagerId = input.VacationApprovalManagerId, VacationEntitlementDays = input.VacationEntitlementDays,
+        Id = Guid.NewGuid(),
+        DisplayName = input.DisplayName.Trim(),
+        Email = email,
+        PasswordHash = string.Empty,
+        Role = input.Role,
+        StartDate = input.StartDate,
+        EndDate = input.EndDate,
+        ManagerId = input.ManagerId,
+        VacationApprovalManagerId = input.VacationApprovalManagerId,
+        VacationEntitlementDays = input.VacationEntitlementDays,
+        IsActive = input.IsActive,
     };
     employee.PasswordHash = passwords.HashPassword(employee, input.Password);
     database.Employees.Add(employee);
     await database.SaveChangesAsync();
     return Results.Created($"/api/v1/admin/employees/{employee.Id}", ToEmployeeDto(employee));
+});
+admin.MapPut("/employees/{id:guid}", async (Guid id, UpdateEmployeeInput input, OpenHrDbContext database, IPasswordHasher<Employee> passwords) =>
+{
+    var employee = await database.Employees.FindAsync(id);
+    if (employee is null)
+    {
+        return Results.NotFound();
+    }
+
+    if (string.IsNullOrWhiteSpace(input.DisplayName) || string.IsNullOrWhiteSpace(input.Email))
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]> { ["employee"] = ["Name und E-Mail sind erforderlich."] });
+    }
+
+    if (input.ManagerId == id || input.VacationApprovalManagerId == id)
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]> { ["employee"] = ["Eine Person kann nicht sich selbst zugeordnet werden."] });
+    }
+
+    var email = input.Email.Trim().ToLowerInvariant();
+    if (await database.Employees.AnyAsync(candidate => candidate.Id != id && candidate.Email == email))
+    {
+        return Results.Conflict(new { title = "Die geschäftliche E-Mail-Adresse ist bereits vergeben." });
+    }
+
+    employee.DisplayName = input.DisplayName.Trim();
+    employee.Email = email;
+    employee.Role = input.Role;
+    employee.StartDate = input.StartDate;
+    employee.EndDate = input.EndDate;
+    employee.ManagerId = input.ManagerId;
+    employee.VacationApprovalManagerId = input.VacationApprovalManagerId;
+    employee.VacationEntitlementDays = input.VacationEntitlementDays;
+    employee.IsActive = input.IsActive;
+
+    if (!string.IsNullOrWhiteSpace(input.Password) && input.Password.Length >= 12)
+    {
+        employee.PasswordHash = passwords.HashPassword(employee, input.Password);
+    }
+
+    await database.SaveChangesAsync();
+    return Results.Ok(ToEmployeeDto(employee));
 });
 admin.MapGet("/absence-types", async (OpenHrDbContext database) =>
     Results.Ok(await database.AbsenceTypes.OrderBy(type => type.Name).ToListAsync()));
@@ -262,7 +317,7 @@ app.MapGet("/api/v1/notifications", [Authorize] async (ClaimsPrincipal principal
 app.Run();
 
 static Guid GetEmployeeId(ClaimsPrincipal principal) => Guid.Parse(principal.FindFirstValue(ClaimTypes.NameIdentifier)!);
-static object ToEmployeeDto(Employee employee) => new { employee.Id, employee.DisplayName, employee.Email, employee.Role, employee.StartDate, employee.ManagerId, employee.VacationApprovalManagerId, employee.VacationEntitlementDays };
+static object ToEmployeeDto(Employee employee) => new { employee.Id, employee.DisplayName, employee.Email, employee.Role, employee.StartDate, employee.EndDate, employee.ManagerId, employee.VacationApprovalManagerId, employee.VacationEntitlementDays, employee.IsActive };
 static async Task<decimal> CountWorkdaysAsync(OpenHrDbContext database, DateOnly startsOn, DateOnly endsOn)
 {
     var excluded = await database.NonWorkingDays.Where(day => day.Date >= startsOn && day.Date <= endsOn).Select(day => day.Date).ToHashSetAsync();
@@ -298,7 +353,8 @@ static async Task SeedAbsenceTypesAsync(OpenHrDbContext database)
 public partial class Program;
 
 record LoginInput(string Email, string Password);
-record CreateEmployeeInput(string DisplayName, string Email, string Password, UserRole Role, DateOnly StartDate, Guid? ManagerId, Guid? VacationApprovalManagerId, decimal VacationEntitlementDays);
+record CreateEmployeeInput(string DisplayName, string Email, string Password, UserRole Role, DateOnly StartDate, DateOnly? EndDate, Guid? ManagerId, Guid? VacationApprovalManagerId, decimal VacationEntitlementDays, bool IsActive);
+record UpdateEmployeeInput(string DisplayName, string Email, string? Password, UserRole Role, DateOnly StartDate, DateOnly? EndDate, Guid? ManagerId, Guid? VacationApprovalManagerId, decimal VacationEntitlementDays, bool IsActive);
 record CreateAbsenceTypeInput(string Name, AbsenceUnit Unit, ApprovalRequirement ApprovalRequirement, bool IsSickness, bool IsVacation);
 record CreateNonWorkingDayInput(DateOnly Date, string Label);
 record CreateAbsenceInput(Guid AbsenceTypeId, DateOnly StartsOn, DateOnly EndsOn, decimal Amount, string? Note);
