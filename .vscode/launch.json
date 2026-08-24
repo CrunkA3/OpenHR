@@ -1,0 +1,46 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Start PostgreSQL",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "docker compose up -d database",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Launch API",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/apps/api/api.csproj"
+        },
+        {
+            "command": "npm run dev",
+            "name": "Run npm run dev",
+            "request": "launch",
+            "type": "node-terminal",
+            "cwd": "${workspaceFolder}/apps/web",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Docker Compose: Full App",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "docker compose --env-file .env up --build",
+            "cwd": "${workspaceFolder}"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch All",
+            "configurations": ["Start PostgreSQL", "Launch API", "Run npm run dev"]
+        },
+        {
+            "name": "Launch All (Docker Compose)",
+            "configurations": ["Docker Compose: Full App"]
+        }
+    ]
+}

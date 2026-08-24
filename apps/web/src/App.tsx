@@ -381,7 +381,8 @@ function AbsenceForm({ types, onCreated, setError }: { types: AbsenceType[]; onC
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
-    const data = new FormData(event.currentTarget)
+    const form = event.currentTarget
+    const data = new FormData(form)
     try {
       await api('/api/v1/absences/mine', {
         method: 'POST',
@@ -393,7 +394,7 @@ function AbsenceForm({ types, onCreated, setError }: { types: AbsenceType[]; onC
           note: data.get('note') || null,
         }),
       })
-      event.currentTarget.reset()
+      form.reset()
       onCreated()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Der Antrag konnte nicht erstellt werden.')
@@ -416,7 +417,8 @@ function EmployeeForm({ managers, onCreated, setError }: { managers: Employee[];
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
-    const data = new FormData(event.currentTarget)
+    const form = event.currentTarget
+    const data = new FormData(form)
     try {
       const created = await api<Employee>('/api/v1/admin/employees', {
         method: 'POST',
@@ -433,7 +435,7 @@ function EmployeeForm({ managers, onCreated, setError }: { managers: Employee[];
           isActive: data.get('isActive') === 'on',
         }),
       })
-      event.currentTarget.reset()
+      form.reset()
       onCreated(created)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Das Konto konnte nicht angelegt werden.')
