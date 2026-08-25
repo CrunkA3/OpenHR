@@ -12,14 +12,46 @@ import App from './App.tsx'
 const theme = createTheme({
   palette: {
     mode: 'light',
-    primary: { main: '#08786e' },
+    primary: { main: '#08786e', light: '#e6f4f2', dark: '#065c56' },
     secondary: { main: '#e6613d' },
-    background: { default: '#f4f6f8', paper: '#ffffff' },
+    background: { default: '#f4f7f6', paper: '#ffffff' },
+    success: { main: '#1f8a68' },
+    warning: { main: '#d9822b' },
+    error: { main: '#d64234' },
   },
+  shape: { borderRadius: 14 },
   typography: {
     fontFamily: 'Roboto, "Segoe UI", sans-serif',
-    h1: { fontFamily: 'Roboto, "Segoe UI", sans-serif' },
-    h2: { fontFamily: 'Roboto, "Segoe UI", sans-serif' },
+    h1: { fontFamily: 'Roboto, "Segoe UI", sans-serif', fontWeight: 700 },
+    h2: { fontFamily: 'Roboto, "Segoe UI", sans-serif', fontWeight: 700 },
+    h3: { fontFamily: 'Roboto, "Segoe UI", sans-serif', fontWeight: 700 },
+    h4: { fontFamily: 'Roboto, "Segoe UI", sans-serif', fontWeight: 700 },
+    h5: { fontFamily: 'Roboto, "Segoe UI", sans-serif', fontWeight: 700 },
+    button: { textTransform: 'none', fontWeight: 700 },
+  },
+  components: {
+    MuiButton: {
+      defaultProps: { disableElevation: true },
+      styleOverrides: {
+        root: {
+          borderRadius: 10,
+          minHeight: 40,
+        },
+      },
+    },
+    MuiPaper: {
+      defaultProps: { elevation: 0 },
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        variant: 'outlined',
+      },
+    },
   },
 })
 

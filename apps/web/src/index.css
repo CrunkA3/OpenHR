@@ -1,13 +1,30 @@
+* { box-sizing: border-box; }
+
 :root {
-  font-family: "Segoe UI", Candara, Optima, sans-serif;
-  color: #17233a;
-  background: #f4f6f8;
+  font-family: "Roboto", "Segoe UI", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: rgba(15, 23, 42, 0.96);
+  background: #f4f7f6;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body, #root {
+  min-width: 20rem;
+  min-height: 100vh;
+  margin: 0;
 }
 
 body {
   min-width: 20rem;
   min-height: 100vh;
   margin: 0;
+  background: #f4f7f6;
+}
+
+button, input, select, textarea {
+  font: inherit;
 }

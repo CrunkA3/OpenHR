@@ -68,12 +68,6 @@
   border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-.calendar-panel,
-.form-panel,
-.list-panel {
-  background: rgba(255, 255, 255, 0.8);
-}
-
 .form-grid {
   display: grid;
   gap: 1rem;
@@ -81,10 +75,6 @@
 
 .form-submit {
   align-items: end;
-}
-
-.data-list {
-  row-gap: 0.25rem;
 }
 
 .empty {
