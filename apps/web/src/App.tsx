@@ -1,7 +1,26 @@
 /* oxlint-disable react(set-state-in-effect) */
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Clock3, LogOut, Menu, Plus, Sparkles, TrendingUp, Users, X } from 'lucide-react'
+import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Clock3, LogOut, Menu, Sparkles, TrendingUp, Users, X } from 'lucide-react'
+import {
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  List,
+  ListItemButton,
+  ListItemText,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { PersonAddAlt, SaveAs } from '@mui/icons-material'
 import './App.css'
 
 type Role = 'Employee' | 'Manager' | 'Administrator'
@@ -340,15 +359,16 @@ function Admin({ setError }: { setError: (value: string) => void }) {
   const managers = employees.filter(item => item.role !== 'Employee' && item.id !== selectedEmployee?.id)
 
   return (
-    <div className="admin-grid">
-      <section className="form-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Stammdaten</p>
-            <h2>Mitarbeitende anlegen</h2>
-          </div>
-          <Plus size={22} />
-        </div>
+    <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'minmax(22rem, 1.15fr) minmax(18rem, .85fr) minmax(18rem, 1fr)' } }}>
+      <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+        <Stack direction="row" sx={{ mb: 2, alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>Stammdaten</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>Mitarbeitende anlegen</Typography>
+          </Box>
+          <PersonAddAlt color="primary" />
+        </Stack>
+
         <EmployeeForm
           managers={managers}
           onCreated={created => {
@@ -358,35 +378,38 @@ function Admin({ setError }: { setError: (value: string) => void }) {
           }}
           setError={setError}
         />
-      </section>
+      </Paper>
 
-      <section className="list-panel admin-list-panel">
-        <h2>Konten</h2>
+      <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, minWidth: 0 }}>
+        <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>Konten</Typography>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Konten</Typography>
+
         {employees.length === 0 ? <Empty text="Noch keine Konten." /> : (
-          <ul className="data-list admin-list">
+          <List disablePadding sx={{ display: 'grid', gap: 1 }}>
             {employees.map(item => (
-              <li key={item.id} className={selectedEmployee?.id === item.id ? 'selected' : ''}>
-                <button type="button" className="admin-account" onClick={() => setSelectedId(item.id)}>
-                  <div>
-                    <strong>{item.displayName}</strong>
-                    <span>{item.email} · {roleLabel(item.role)}</span>
-                  </div>
-                  <span className="vacation">{item.vacationEntitlementDays} Urlaubstage</span>
-                </button>
-              </li>
+              <ListItemButton
+                key={item.id}
+                selected={selectedEmployee?.id === item.id}
+                onClick={() => setSelectedId(item.id)}
+                sx={{ borderRadius: 2, border: '1px solid', borderColor: selectedEmployee?.id === item.id ? 'primary.main' : 'divider', bgcolor: selectedEmployee?.id === item.id ? 'rgba(25, 118, 210, 0.04)' : 'transparent', px: 1.5, py: 1 }}
+              >
+                <ListItemText
+                  primary={item.displayName}
+                  secondary={`${item.email} • ${roleLabel(item.role)}`}
+                  sx={{ mr: 1 }}
+                />
+                <Chip label={`${item.vacationEntitlementDays} Urlaubstage`} size="small" variant="outlined" />
+              </ListItemButton>
             ))}
-          </ul>
+          </List>
         )}
-      </section>
+      </Paper>
 
       {selectedEmployee && (
-        <section className="form-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Details</p>
-              <h2>{selectedEmployee.displayName} pflegen</h2>
-            </div>
-          </div>
+        <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+          <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>Details</Typography>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>{selectedEmployee.displayName} pflegen</Typography>
+
           <EmployeeDetailsForm
             key={selectedEmployee.id}
             employee={selectedEmployee}
@@ -398,9 +421,9 @@ function Admin({ setError }: { setError: (value: string) => void }) {
             }}
             setError={setError}
           />
-        </section>
+        </Paper>
       )}
-    </div>
+    </Box>
   )
 }
 
@@ -504,19 +527,44 @@ function EmployeeForm({ managers, onCreated, setError }: { managers: Employee[];
   }
 
   return (
-    <form className="form-grid admin-form" onSubmit={event => void submit(event)}>
-      <Field label="Anzeigename"><input name="displayName" maxLength={120} required /></Field>
-      <Field label="Geschäftliche E-Mail"><input name="email" type="email" required /></Field>
-      <Field label="Temporäres Passwort"><input name="password" type="password" minLength={12} required /></Field>
-      <Field label="Rolle"><select name="role" defaultValue="Employee"><option value="Employee">Mitarbeitende:r</option><option value="Manager">Führungskraft</option><option value="Administrator">Administration</option></select></Field>
-      <Field label="Eintrittsdatum"><input name="startDate" type="date" required /></Field>
-      <Field label="Austrittsdatum"><input name="endDate" type="date" /></Field>
-      <Field label="Zugeordnete Führungskraft"><select name="managerId" defaultValue=""><option value="">Keine Zuordnung</option>{managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}</select></Field>
-      <Field label="Urlaubsfreigabe durch"><select name="vacationApprovalManagerId" defaultValue=""><option value="">Keine Zuordnung</option>{managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}</select></Field>
-      <Field label="Urlaubstage"><input name="vacationEntitlementDays" type="number" min="0" step="0.5" defaultValue="0" required /></Field>
-      <Field label="Aktiv"><input name="isActive" type="checkbox" defaultChecked /></Field>
-      <div className="form-submit"><button>Speichern</button></div>
-    </form>
+    <Box component="form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' } }}>
+      <TextField name="displayName" label="Anzeigename" required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} />
+      <TextField name="email" type="email" label="Geschäftliche E-Mail" required fullWidth />
+      <TextField name="password" type="password" label="Temporäres Passwort" required fullWidth slotProps={{ htmlInput: { minLength: 12 } }} />
+      <FormControl fullWidth>
+        <InputLabel id="new-role-label">Rolle</InputLabel>
+        <Select labelId="new-role-label" name="role" label="Rolle" defaultValue="Employee">
+          <MenuItem value="Employee">Mitarbeitende:r</MenuItem>
+          <MenuItem value="Manager">Führungskraft</MenuItem>
+          <MenuItem value="Administrator">Administration</MenuItem>
+        </Select>
+      </FormControl>
+      <TextField name="startDate" type="date" label="Eintrittsdatum" required fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+      <TextField name="endDate" type="date" label="Austrittsdatum" fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+      <FormControl fullWidth>
+        <InputLabel id="new-manager-label">Zugeordnete Führungskraft</InputLabel>
+        <Select labelId="new-manager-label" name="managerId" label="Zugeordnete Führungskraft" defaultValue="">
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth>
+        <InputLabel id="new-vacation-manager-label">Urlaubsfreigabe durch</InputLabel>
+        <Select labelId="new-vacation-manager-label" name="vacationApprovalManagerId" label="Urlaubsfreigabe durch" defaultValue="">
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <TextField name="vacationEntitlementDays" type="number" label="Urlaubstage" required fullWidth slotProps={{ htmlInput: { min: 0, step: 0.5 } }} defaultValue={0} />
+      <FormControlLabel
+        control={<Checkbox name="isActive" defaultChecked />} 
+        label="Aktiv"
+        sx={{ ml: 0.5, alignSelf: 'center' }}
+      />
+      <Box sx={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+        <Button type="submit" variant="contained" startIcon={<PersonAddAlt />} sx={{ minWidth: 160 }}>Speichern</Button>
+      </Box>
+    </Box>
   )
 }
 
@@ -548,35 +596,44 @@ function EmployeeDetailsForm({ employee, managers, onSaved, setError }: { employ
   }
 
   return (
-    <form className="form-grid admin-form" onSubmit={event => void submit(event)}>
-      <Field label="Anzeigename"><input name="displayName" defaultValue={employee.displayName} maxLength={120} required /></Field>
-      <Field label="Geschäftliche E-Mail"><input name="email" type="email" defaultValue={employee.email} required /></Field>
-      <Field label="Neues Passwort (optional)"><input name="password" type="password" minLength={12} placeholder="Nur bei Änderung" /></Field>
-      <Field label="Rolle">
-        <select name="role" defaultValue={employee.role}>
+    <Box component="form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' } }}>
+      <TextField name="displayName" label="Anzeigename" defaultValue={employee.displayName} required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} />
+      <TextField name="email" type="email" label="Geschäftliche E-Mail" defaultValue={employee.email} required fullWidth />
+      <TextField name="password" type="password" label="Neues Passwort (optional)" fullWidth placeholder="Nur bei Änderung" slotProps={{ htmlInput: { minLength: 12 } }} />
+      <FormControl fullWidth>
+        <InputLabel id="edit-role-label">Rolle</InputLabel>
+        <Select labelId="edit-role-label" name="role" label="Rolle" defaultValue={employee.role}>
           {['Employee', 'Manager', 'Administrator'].map(role => (
-            <option value={role} key={role}>{role === 'Employee' ? 'Mitarbeitende:r' : role === 'Manager' ? 'Führungskraft' : 'Administration'}</option>
+            <MenuItem value={role} key={role}>{role === 'Employee' ? 'Mitarbeitende:r' : role === 'Manager' ? 'Führungskraft' : 'Administration'}</MenuItem>
           ))}
-        </select>
-      </Field>
-      <Field label="Eintrittsdatum"><input name="startDate" type="date" defaultValue={employee.startDate} required /></Field>
-      <Field label="Austrittsdatum"><input name="endDate" type="date" defaultValue={employee.endDate ?? ''} /></Field>
-      <Field label="Zugeordnete Führungskraft">
-        <select name="managerId" defaultValue={employee.managerId ?? ''}>
-          <option value="">Keine Zuordnung</option>
-          {managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}
-        </select>
-      </Field>
-      <Field label="Urlaubsfreigabe durch">
-        <select name="vacationApprovalManagerId" defaultValue={employee.vacationApprovalManagerId ?? ''}>
-          <option value="">Keine Zuordnung</option>
-          {managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}
-        </select>
-      </Field>
-      <Field label="Urlaubstage"><input name="vacationEntitlementDays" type="number" min="0" step="0.5" defaultValue={employee.vacationEntitlementDays} required /></Field>
-      <Field label="Aktiv"><input name="isActive" type="checkbox" defaultChecked={employee.isActive} /></Field>
-      <div className="form-submit"><button>Änderungen speichern</button></div>
-    </form>
+        </Select>
+      </FormControl>
+      <TextField name="startDate" type="date" label="Eintrittsdatum" defaultValue={employee.startDate} required fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+      <TextField name="endDate" type="date" label="Austrittsdatum" defaultValue={employee.endDate ?? ''} fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+      <FormControl fullWidth>
+        <InputLabel id="edit-manager-label">Zugeordnete Führungskraft</InputLabel>
+        <Select labelId="edit-manager-label" name="managerId" label="Zugeordnete Führungskraft" defaultValue={employee.managerId ?? ''}>
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth>
+        <InputLabel id="edit-vacation-manager-label">Urlaubsfreigabe durch</InputLabel>
+        <Select labelId="edit-vacation-manager-label" name="vacationApprovalManagerId" label="Urlaubsfreigabe durch" defaultValue={employee.vacationApprovalManagerId ?? ''}>
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <TextField name="vacationEntitlementDays" type="number" label="Urlaubstage" defaultValue={employee.vacationEntitlementDays} required fullWidth slotProps={{ htmlInput: { min: 0, step: 0.5 } }} />
+      <FormControlLabel
+        control={<Checkbox name="isActive" defaultChecked={employee.isActive} />}
+        label="Aktiv"
+        sx={{ ml: 0.5, alignSelf: 'center' }}
+      />
+      <Box sx={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+        <Button type="submit" variant="contained" startIcon={<SaveAs />} sx={{ minWidth: 210 }}>Änderungen speichern</Button>
+      </Box>
+    </Box>
   )
 }
 
