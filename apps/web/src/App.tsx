@@ -696,7 +696,7 @@ function EmployeeDetailsForm({ employee, managers, onSaved, setError }: { employ
     <Box component="form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' } }}>
       <TextField name="displayName" label="Anzeigename" defaultValue={employee.displayName} required fullWidth slotProps={{ htmlInput: { maxLength: 120 } }} />
       <TextField name="email" type="email" label="Geschäftliche E-Mail" defaultValue={employee.email} required fullWidth />
-      <TextField name="password" type="password" label="Neues Passwort (optional)" fullWidth placeholder="Nur bei Änderung" slotProps={{ htmlInput: { minLength: 12 } }} />
+      <TextField name="password" type="password" label="Neues Passwort (optional)" fullWidth placeholder="Nur bei Änderung" autoComplete="new-password" slotProps={{ htmlInput: { minLength: 12 } }} />
       <FormControl fullWidth>
         <InputLabel id="edit-role-label">Rolle</InputLabel>
         <Select labelId="edit-role-label" name="role" label="Rolle" defaultValue={employee.role}>
