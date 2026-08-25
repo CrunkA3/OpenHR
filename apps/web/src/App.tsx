@@ -1,30 +1,7 @@
 /* oxlint-disable react(set-state-in-effect) */
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-<<<<<<< Updated upstream
-import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, LogOut, Menu, Plus, Users, X } from 'lucide-react'
-=======
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Clock3, LogOut, Menu, Plus, Sparkles, TrendingUp, Users, X } from 'lucide-react'
-import {
-  Alert,
-  Badge,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  Drawer,
-  FormControlLabel,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  MenuItem,
-  Paper,
-  TextField,
-  Typography,
-} from '@mui/material'
->>>>>>> Stashed changes
 import './App.css'
 
 type Role = 'Employee' | 'Manager' | 'Administrator'
@@ -67,6 +44,13 @@ const dateValue = (date: Date) => date.toISOString().slice(0, 10)
 const germanDate = (value: string) => new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(`${value}T00:00:00`))
 const statusLabel = (status: string) => ({ Pending: 'Ausstehend', Approved: 'Genehmigt', Rejected: 'Abgelehnt', Reported: 'Gemeldet' })[status] ?? status
 const roleLabel = (role: Role) => ({ Employee: 'Mitarbeitende:r', Manager: 'Führungskraft', Administrator: 'Administration' })[role]
+const absenceTone = (label?: string | null) => {
+  const value = (label ?? '').toLowerCase()
+  if (value.includes('urlaub') || value.includes('vacation')) return 'vacation'
+  if (value.includes('krank') || value.includes('sick')) return 'sick'
+  if (value.includes('home') || value.includes('remote')) return 'remote'
+  return 'default'
+}
 
 function App() {
   const [employee, setEmployee] = useState<Employee>()
@@ -130,37 +114,14 @@ function App() {
   const approvedThisMonth = visibleMonthAbsences.filter(item => item.status === 'Approved' || item.status === 'Reported').reduce((total, item) => total + item.amount, 0)
   const pendingThisMonth = visibleMonthAbsences.filter(item => item.status === 'Pending').length
   const nextAbsence = [...absences].filter(item => new Date(item.startsOn) >= new Date()).sort((left, right) => new Date(left.startsOn).getTime() - new Date(right.startsOn).getTime())[0]
+  const upcomingAbsences = [...absences].sort((left, right) => new Date(left.startsOn).getTime() - new Date(right.startsOn).getTime()).slice(0, 4)
 
-  const summaryCards = [
-    {
-      title: 'Aktiv in diesem Monat',
-      value: `${visibleMonthAbsences.length}`,
-      detail: `${approvedThisMonth} Tage genehmigt`,
-      accent: 'primary',
-      icon: CalendarDays,
-    },
-    {
-      title: 'Ausstehend',
-      value: `${pendingThisMonth + pending.length}`,
-      detail: `${pending.length} Freigaben warten`,
-      accent: 'warning',
-      icon: Clock3,
-    },
-    {
-      title: 'Verfügbar',
-      value: `${Math.max(employee.vacationEntitlementDays - approvedThisMonth, 0)}`,
-      detail: 'Urlaubstage verbleibend',
-      accent: 'success',
-      icon: TrendingUp,
-    },
-    {
-      title: 'Nächster Antrag',
-      value: nextAbsence ? `${nextAbsence.absenceType.name}` : 'Keine',
-      detail: nextAbsence ? `${germanDate(nextAbsence.startsOn)} bis ${germanDate(nextAbsence.endsOn)}` : 'Keine Abwesenheiten geplant',
-      accent: 'secondary',
-      icon: Sparkles,
-    },
-  ] as const
+  const kpiCards = [
+    { label: 'Genehmigt', value: approvedThisMonth.toString(), trend: '+12% vs. Vormonat', tone: 'positive' },
+    { label: 'Offen', value: String(pendingThisMonth + pending.length), trend: pending.length ? `${pending.length} Freigaben` : 'stabil', tone: 'warning' },
+    { label: 'Verbleibend', value: String(Math.max(employee.vacationEntitlementDays - approvedThisMonth, 0)), trend: 'diese Woche', tone: 'positive' },
+    { label: 'Nächster Antrag', value: nextAbsence ? nextAbsence.absenceType.name : 'Keine', trend: nextAbsence ? `${germanDate(nextAbsence.startsOn)}` : 'keine Einträge', tone: 'neutral' },
+  ]
 
   return (
     <main className="workspace">
@@ -208,25 +169,45 @@ function App() {
 
         {error && <p className="error" role="alert">{error}</p>}
 
-        <Box className="summary-grid" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', xl: 'repeat(4, minmax(0, 1fr))' }, gap: 2, mb: 2.5 }}>
-          {summaryCards.map((card) => {
-            const Icon = card.icon
-            return (
-              <Paper key={card.title} elevation={0} sx={{ p: 2.25, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                  <Typography variant="subtitle2" sx={{ color: 'text.secondary', fontWeight: 700 }}>{card.title}</Typography>
-                  <Box sx={{ width: 34, height: 34, borderRadius: 2, display: 'grid', placeItems: 'center', bgcolor: card.accent === 'primary' ? 'rgba(8,120,110,0.10)' : card.accent === 'warning' ? 'rgba(217,130,43,0.12)' : card.accent === 'success' ? 'rgba(31,138,104,0.12)' : 'rgba(230,97,61,0.10)', color: card.accent === 'primary' ? 'primary.main' : card.accent === 'warning' ? 'warning.main' : card.accent === 'success' ? 'success.main' : 'secondary.main' }}>
-                    <Icon size={18} />
-                  </Box>
-                </Box>
-                <Typography variant="h4" component="div" sx={{ fontSize: { xs: '1.5rem', md: '1.85rem' }, fontWeight: 800, lineHeight: 1.2, mb: 0.5 }}>{card.value}</Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>{card.detail}</Typography>
-              </Paper>
-            )
-          })}
-        </Box>
+        <div className="kpi-row" aria-label="KPI-Übersicht">
+          {kpiCards.map(card => (
+            <article className={`kpi-card tone-${card.tone}`} key={card.label}>
+              <div className="kpi-header">
+                <span>{card.label}</span>
+                <span className="kpi-icon">{card.tone === 'warning' ? <Clock3 size={16} /> : card.tone === 'positive' ? <TrendingUp size={16} /> : <Sparkles size={16} />}</span>
+              </div>
+              <strong>{card.value}</strong>
+              <small>{card.trend}</small>
+            </article>
+          ))}
+        </div>
 
-        {view === 'calendar' && <Calendar month={month} entries={entries} onPrevious={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() - 1, 1))} onNext={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() + 1, 1))} />}
+        {view === 'calendar' && (
+          <div className="dashboard-panels">
+            <Calendar month={month} entries={entries} onPrevious={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() - 1, 1))} onNext={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() + 1, 1))} />
+            <aside className="insight-panel">
+              <div className="panel-heading compact">
+                <div>
+                  <p className="eyebrow">Aussichten</p>
+                  <h2>Bevorstehende Abwesenheiten</h2>
+                </div>
+              </div>
+              <div className="timeline">
+                {upcomingAbsences.length === 0 ? <p className="empty">Keine geplanten Abwesenheiten.</p> : upcomingAbsences.map(absence => (
+                  <div className="timeline-item" key={absence.id}>
+                    <div className="timeline-row">
+                      <strong>{absence.absenceType.name}</strong>
+                      <Status value={statusLabel(absence.status)} status={absence.status} />
+                    </div>
+                    <span className="timeline-meta">{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</span>
+                    <span className="timeline-meta subtle">{absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</span>
+                  </div>
+                ))}
+              </div>
+            </aside>
+          </div>
+        )}
+
         {view === 'requests' && <Requests types={types} absences={absences} onCreated={() => void load()} setError={setError} />}
         {view === 'approvals' && <Approvals pending={pending} onDecided={() => void load()} setError={setError} />}
         {view === 'admin' && <Admin setError={setError} />}
@@ -266,7 +247,7 @@ function Calendar({ month, entries, onPrevious, onNext }: { month: Date; entries
               <time dateTime={value}>{day.getDate()}</time>
               <div className="day-entries">
                 {relevant.map(entry => (
-                  <span className={entry.isOwn ? 'calendar-entry own' : 'calendar-entry'} key={entry.id} title={`${entry.employeeName}: ${entry.absenceType ?? 'Abwesend'}`}>
+                  <span className={`calendar-entry tone-${absenceTone(entry.absenceType)} ${entry.isOwn ? 'own' : ''}`} key={entry.id} title={`${entry.employeeName}: ${entry.absenceType ?? 'Abwesend'}`}>
                     <b>{entry.employeeName}</b>
                     <em>{entry.absenceType ?? 'Abwesend'}</em>
                   </span>
@@ -298,19 +279,11 @@ function Requests({ types, absences, onCreated, setError }: { types: AbsenceType
         {absences.length === 0 ? <Empty text="Noch keine Anträge." /> : (
           <ul className="data-list">
             {absences.map(absence => (
-<<<<<<< Updated upstream
-              <li key={absence.id}>
+              <li className="dense-row" key={absence.id}>
                 <div>
                   <strong>{absence.absenceType.name}</strong>
                   <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)} · {absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</span>
                 </div>
-=======
-              <Box component="li" key={absence.id} className="dense-row" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 1.1, px: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography component="strong" sx={{ display: 'block', fontWeight: 700, fontSize: '.95rem' }}>{absence.absenceType.name}</Typography>
-                  <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.8rem' }}>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)} · {absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</Typography>
-                </Box>
->>>>>>> Stashed changes
                 <Status value={statusLabel(absence.status)} status={absence.status} />
               </li>
             ))}
@@ -333,8 +306,7 @@ function Approvals({ pending, onDecided, setError }: { pending: PendingAbsence[]
       {pending.length === 0 ? <Empty text="Keine offenen Anträge." /> : (
         <ul className="data-list">
           {pending.map(absence => (
-<<<<<<< Updated upstream
-            <li key={absence.id}>
+            <li className="dense-row" key={absence.id}>
               <div>
                 <strong>{absence.employee.displayName} · {absence.absenceType.name}</strong>
                 <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</span>
@@ -344,18 +316,6 @@ function Approvals({ pending, onDecided, setError }: { pending: PendingAbsence[]
                 <button className="secondary" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</button>
               </div>
             </li>
-=======
-            <Box component="li" key={absence.id} className="dense-row" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 1.1, px: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography component="strong" sx={{ display: 'block', fontWeight: 700, fontSize: '.95rem' }}>{absence.employee.displayName} · {absence.absenceType.name}</Typography>
-                <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.8rem' }}>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</Typography>
-              </Box>
-              <Box className="row-actions" sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
-                <Button variant="contained" size="small" onClick={() => void decide(absence.id, true, onDecided, setError)}>Genehmigen</Button>
-                <Button variant="outlined" size="small" color="inherit" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</Button>
-              </Box>
-            </Box>
->>>>>>> Stashed changes
           ))}
         </ul>
       )}
@@ -405,7 +365,6 @@ function Admin({ setError }: { setError: (value: string) => void }) {
         {employees.length === 0 ? <Empty text="Noch keine Konten." /> : (
           <ul className="data-list admin-list">
             {employees.map(item => (
-<<<<<<< Updated upstream
               <li key={item.id} className={selectedEmployee?.id === item.id ? 'selected' : ''}>
                 <button type="button" className="admin-account" onClick={() => setSelectedId(item.id)}>
                   <div>
@@ -415,17 +374,6 @@ function Admin({ setError }: { setError: (value: string) => void }) {
                   <span className="vacation">{item.vacationEntitlementDays} Urlaubstage</span>
                 </button>
               </li>
-=======
-              <Box component="li" key={item.id} className={selectedEmployee?.id === item.id ? 'selected' : ''} sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
-                <Button type="button" className="admin-account" onClick={() => setSelectedId(item.id)} sx={{ width: '100%', justifyContent: 'space-between', py: 1, px: 1, textAlign: 'left', color: 'text.primary', borderRadius: 1.5, bgcolor: selectedEmployee?.id === item.id ? 'rgba(8,120,110,0.08)' : 'transparent' }}>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography component="strong" sx={{ display: 'block', fontWeight: 700, fontSize: '.95rem' }}>{item.displayName}</Typography>
-                    <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.8rem' }}>{item.email} · {roleLabel(item.role)}</Typography>
-                  </Box>
-                  <Typography component="span" className="vacation" sx={{ color: 'text.secondary', whiteSpace: 'nowrap', fontSize: '.8rem' }}>{item.vacationEntitlementDays} Urlaubstage</Typography>
-                </Button>
-              </Box>
->>>>>>> Stashed changes
             ))}
           </ul>
         )}
