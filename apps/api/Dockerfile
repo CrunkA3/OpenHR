@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["api.csproj", "."]
-RUN dotnet restore
+RUN dotnet restore --no-cache
 COPY . .
 RUN dotnet publish --configuration Release --output /app/publish --no-restore
 
