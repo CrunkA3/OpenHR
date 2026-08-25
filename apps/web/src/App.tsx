@@ -1,6 +1,6 @@
 /* oxlint-disable react(set-state-in-effect) */
 import { useEffect, useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { FormEvent } from 'react'
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Clock3, LogOut, Menu, Sparkles, TrendingUp, Users, X } from 'lucide-react'
 import {
   Box,
@@ -282,63 +282,56 @@ function Calendar({ month, entries, onPrevious, onNext }: { month: Date; entries
 
 function Requests({ types, absences, onCreated, setError }: { types: AbsenceType[]; absences: Absence[]; onCreated: () => void; setError: (value: string) => void }) {
   return (
-    <div className="stack">
-      <section className="form-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Abwesenheit</p>
-            <h2>Neuen Antrag stellen</h2>
-          </div>
-        </div>
+    <Stack spacing={3}>
+      <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+        <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>Abwesenheit</Typography>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Neuen Antrag stellen</Typography>
         <AbsenceForm types={types} onCreated={onCreated} setError={setError} />
-      </section>
+      </Paper>
 
-      <section className="list-panel">
-        <h2>Meine Anträge</h2>
+      <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Meine Anträge</Typography>
         {absences.length === 0 ? <Empty text="Noch keine Anträge." /> : (
-          <ul className="data-list">
+          <Stack spacing={1.5}>
             {absences.map(absence => (
-              <li className="dense-row" key={absence.id}>
-                <div>
-                  <strong>{absence.absenceType.name}</strong>
-                  <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)} · {absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</span>
-                </div>
+              <Box key={absence.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, px: 2, py: 1.5 }}>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{absence.absenceType.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)} · {absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</Typography>
+                </Box>
                 <Status value={statusLabel(absence.status)} status={absence.status} />
-              </li>
+              </Box>
             ))}
-          </ul>
+          </Stack>
         )}
-      </section>
-    </div>
+      </Paper>
+    </Stack>
   )
 }
 
 function Approvals({ pending, onDecided, setError }: { pending: PendingAbsence[]; onDecided: () => void; setError: (value: string) => void }) {
   return (
-    <section className="list-panel">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">Eingang</p>
-          <h2>Offene Freigaben</h2>
-        </div>
-      </div>
+    <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
+      <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>Eingang</Typography>
+      <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Offene Freigaben</Typography>
+
       {pending.length === 0 ? <Empty text="Keine offenen Anträge." /> : (
-        <ul className="data-list">
+        <Stack spacing={1.5}>
           {pending.map(absence => (
-            <li className="dense-row" key={absence.id}>
-              <div>
-                <strong>{absence.employee.displayName} · {absence.absenceType.name}</strong>
-                <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</span>
-              </div>
-              <div className="row-actions">
-                <button onClick={() => void decide(absence.id, true, onDecided, setError)}>Genehmigen</button>
-                <button className="secondary" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</button>
-              </div>
-            </li>
+            <Box key={absence.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2, px: 2, py: 1.5 }}>
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{absence.employee.displayName} · {absence.absenceType.name}</Typography>
+                <Typography variant="body2" color="text.secondary">{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</Typography>
+              </Box>
+              <Stack direction="row" spacing={1}>
+                <Button variant="contained" onClick={() => void decide(absence.id, true, onDecided, setError)}>Genehmigen</Button>
+                <Button variant="outlined" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</Button>
+              </Stack>
+            </Box>
           ))}
-        </ul>
+        </Stack>
       )}
-    </section>
+    </Paper>
   )
 }
 
@@ -445,18 +438,18 @@ function Login({ onLogin, error, setError }: { onLogin: () => void; error: strin
 
   return (
     <main className="login-page">
-      <section className="login-panel">
-        <div className="brand-mark">OH</div>
-        <p className="eyebrow">OpenHR</p>
-        <h1>Anmelden</h1>
-        <p className="login-copy">Personalverwaltung für Ihr Unternehmen.</p>
-        {error && <p className="error" role="alert">{error}</p>}
-        <form onSubmit={event => void submit(event)}>
-          <Field label="Geschäftliche E-Mail"><input name="email" type="email" required autoComplete="username" /></Field>
-          <Field label="Passwort"><input name="password" type="password" minLength={12} required autoComplete="current-password" /></Field>
-          <button>Anmelden</button>
-        </form>
-      </section>
+      <Paper elevation={3} sx={{ width: 'min(100%, 27rem)', p: 4, borderRadius: 3 }}>
+        <Box sx={{ display: 'grid', placeItems: 'center', width: 48, height: 48, borderRadius: 2, bgcolor: 'primary.main', color: 'white', fontWeight: 800, mb: 3 }}>OH</Box>
+        <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>OpenHR</Typography>
+        <Typography variant="h4" sx={{ mb: 1, fontWeight: 700 }}>Anmelden</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Personalverwaltung für Ihr Unternehmen.</Typography>
+        {error && <Box component="p" sx={{ mb: 2, p: 1.5, borderLeft: 4, borderColor: 'error.main', bgcolor: 'rgba(211,47,47,0.08)', color: 'error.main', borderRadius: 1 }}>{error}</Box>}
+        <Box component="form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gap: 2 }}>
+          <TextField name="email" type="email" label="Geschäftliche E-Mail" required autoComplete="username" fullWidth />
+          <TextField name="password" type="password" label="Passwort" required autoComplete="current-password" fullWidth slotProps={{ htmlInput: { minLength: 12 } }} />
+          <Button type="submit" variant="contained" size="large" sx={{ mt: 1 }}>Anmelden</Button>
+        </Box>
+      </Paper>
     </main>
   )
 }
@@ -486,14 +479,21 @@ function AbsenceForm({ types, onCreated, setError }: { types: AbsenceType[]; onC
   }
 
   return (
-    <form className="form-grid" onSubmit={event => void submit(event)}>
-      <Field label="Typ"><select name="type" required>{types.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}</select></Field>
-      <Field label="Von"><input name="start" type="date" required /></Field>
-      <Field label="Bis"><input name="end" type="date" required /></Field>
-      <Field label="Stunden bei Stunden-Typen"><input name="amount" type="number" min="0.5" step="0.5" defaultValue="0" /></Field>
-      <Field label="Hinweis"><input name="note" maxLength={500} /></Field>
-      <div className="form-submit"><button>Antrag einreichen</button></div>
-    </form>
+    <Box component="form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' } }}>
+      <FormControl fullWidth>
+        <InputLabel id="absence-type-label">Typ</InputLabel>
+        <Select labelId="absence-type-label" name="type" label="Typ" defaultValue={types[0]?.id ?? ''}>
+          {types.map(type => <MenuItem value={type.id} key={type.id}>{type.name}</MenuItem>)}
+        </Select>
+      </FormControl>
+      <TextField name="start" type="date" label="Von" required fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+      <TextField name="end" type="date" label="Bis" required fullWidth slotProps={{ inputLabel: { shrink: true } }} />
+      <TextField name="amount" type="number" label="Stunden bei Stunden-Typen" defaultValue={0} fullWidth slotProps={{ htmlInput: { min: 0.5, step: 0.5 } }} />
+      <TextField name="note" label="Hinweis" fullWidth slotProps={{ htmlInput: { maxLength: 500 } }} />
+      <Box sx={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+        <Button type="submit" variant="contained">Antrag einreichen</Button>
+      </Box>
+    </Box>
   )
 }
 
@@ -635,10 +635,6 @@ function EmployeeDetailsForm({ employee, managers, onSaved, setError }: { employ
       </Box>
     </Box>
   )
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label>{label}{children}</label>
 }
 
 function Empty({ text }: { text: string }) {
