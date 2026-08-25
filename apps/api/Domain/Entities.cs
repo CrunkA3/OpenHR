@@ -70,7 +70,6 @@ public sealed class AbsenceRequest
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? DecidedAt { get; set; }
     public string? DecisionNote { get; set; }
-    public byte[] RowVersion { get; set; } = [];
 }
 
 public sealed class NonWorkingDay

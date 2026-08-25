@@ -37,7 +37,6 @@ public sealed class OpenHrDbContext(DbContextOptions<OpenHrDbContext> options) :
             entity.Property(request => request.Amount).HasPrecision(5, 1);
             entity.Property(request => request.Note).HasMaxLength(500);
             entity.Property(request => request.DecisionNote).HasMaxLength(500);
-            entity.Property(request => request.RowVersion).IsRowVersion();
             entity.HasOne(request => request.Employee).WithMany(employee => employee.AbsenceRequests)
                 .HasForeignKey(request => request.EmployeeId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(request => request.AbsenceType).WithMany()
