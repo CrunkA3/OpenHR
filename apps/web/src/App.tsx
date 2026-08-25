@@ -2,6 +2,18 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, LogOut, Menu, Plus, Users, X } from 'lucide-react'
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
+} from '@mui/material'
 import './App.css'
 
 type Role = 'Employee' | 'Manager' | 'Administrator'
@@ -362,18 +374,24 @@ function Login({ onLogin, error, setError }: { onLogin: () => void; error: strin
 
   return (
     <main className="login-page">
-      <section className="login-panel">
-        <div className="brand-mark">OH</div>
-        <p className="eyebrow">OpenHR</p>
-        <h1>Anmelden</h1>
-        <p className="login-copy">Personalverwaltung für Ihr Unternehmen.</p>
-        {error && <p className="error" role="alert">{error}</p>}
-        <form onSubmit={event => void submit(event)}>
-          <Field label="Geschäftliche E-Mail"><input name="email" type="email" required autoComplete="username" /></Field>
-          <Field label="Passwort"><input name="password" type="password" minLength={12} required autoComplete="current-password" /></Field>
-          <button>Anmelden</button>
-        </form>
-      </section>
+      <Paper elevation={3} className="login-panel" sx={{ width: 'min(100%, 27rem)', p: 4, borderRadius: 3 }}>
+        <Box className="brand-mark" sx={{ mb: 3 }}>OH</Box>
+        <Typography variant="overline" className="eyebrow" sx={{ color: 'primary.main', display: 'block', mb: 1 }}>OpenHR</Typography>
+        <Typography variant="h4" component="h1" sx={{ mb: 1 }}>Anmelden</Typography>
+        <Typography className="login-copy" sx={{ mb: 3, color: 'text.secondary' }}>Personalverwaltung für Ihr Unternehmen.</Typography>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} role="alert">{error}</Alert>
+        )}
+        <Box component="form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gap: 2 }}>
+          <Field label="Geschäftliche E-Mail">
+            <TextField name="email" type="email" required autoComplete="username" fullWidth size="small" />
+          </Field>
+          <Field label="Passwort">
+            <TextField name="password" type="password" required autoComplete="current-password" fullWidth size="small" />
+          </Field>
+          <Button type="submit" variant="contained" size="large" sx={{ mt: 1 }}>Anmelden</Button>
+        </Box>
+      </Paper>
     </main>
   )
 }
@@ -403,14 +421,20 @@ function AbsenceForm({ types, onCreated, setError }: { types: AbsenceType[]; onC
   }
 
   return (
-    <form className="form-grid" onSubmit={event => void submit(event)}>
-      <Field label="Typ"><select name="type" required>{types.map(type => <option value={type.id} key={type.id}>{type.name}</option>)}</select></Field>
-      <Field label="Von"><input name="start" type="date" required /></Field>
-      <Field label="Bis"><input name="end" type="date" required /></Field>
-      <Field label="Stunden bei Stunden-Typen"><input name="amount" type="number" min="0.5" step="0.5" defaultValue="0" /></Field>
-      <Field label="Hinweis"><input name="note" maxLength={500} /></Field>
-      <div className="form-submit"><button>Antrag einreichen</button></div>
-    </form>
+    <Box component="form" className="form-grid" onSubmit={event => void submit(event)} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' }, gap: 2 }}>
+      <Field label="Typ">
+        <TextField select name="type" required fullWidth size="small" defaultValue={types[0]?.id ?? ''}>
+          {types.map(type => <MenuItem value={type.id} key={type.id}>{type.name}</MenuItem>)}
+        </TextField>
+      </Field>
+      <Field label="Von"><TextField name="start" type="date" required fullWidth size="small" /></Field>
+      <Field label="Bis"><TextField name="end" type="date" required fullWidth size="small" /></Field>
+      <Field label="Stunden bei Stunden-Typen"><TextField name="amount" type="number" defaultValue="0" fullWidth size="small" /></Field>
+      <Field label="Hinweis"><TextField name="note" fullWidth size="small" /></Field>
+      <Box className="form-submit" sx={{ display: 'flex', alignItems: 'end' }}>
+        <Button type="submit" variant="contained">Antrag einreichen</Button>
+      </Box>
+    </Box>
   )
 }
 
@@ -444,19 +468,37 @@ function EmployeeForm({ managers, onCreated, setError }: { managers: Employee[];
   }
 
   return (
-    <form className="form-grid admin-form" onSubmit={event => void submit(event)}>
-      <Field label="Anzeigename"><input name="displayName" maxLength={120} required /></Field>
-      <Field label="Geschäftliche E-Mail"><input name="email" type="email" required /></Field>
-      <Field label="Temporäres Passwort"><input name="password" type="password" minLength={12} required /></Field>
-      <Field label="Rolle"><select name="role" defaultValue="Employee"><option value="Employee">Mitarbeitende:r</option><option value="Manager">Führungskraft</option><option value="Administrator">Administration</option></select></Field>
-      <Field label="Eintrittsdatum"><input name="startDate" type="date" required /></Field>
-      <Field label="Austrittsdatum"><input name="endDate" type="date" /></Field>
-      <Field label="Zugeordnete Führungskraft"><select name="managerId" defaultValue=""><option value="">Keine Zuordnung</option>{managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}</select></Field>
-      <Field label="Urlaubsfreigabe durch"><select name="vacationApprovalManagerId" defaultValue=""><option value="">Keine Zuordnung</option>{managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}</select></Field>
-      <Field label="Urlaubstage"><input name="vacationEntitlementDays" type="number" min="0" step="0.5" defaultValue="0" required /></Field>
-      <Field label="Aktiv"><input name="isActive" type="checkbox" defaultChecked /></Field>
-      <div className="form-submit"><button>Speichern</button></div>
-    </form>
+    <Box component="form" className="form-grid admin-form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
+      <Field label="Anzeigename"><TextField name="displayName" required fullWidth size="small" /></Field>
+      <Field label="Geschäftliche E-Mail"><TextField name="email" type="email" required fullWidth size="small" /></Field>
+      <Field label="Temporäres Passwort"><TextField name="password" type="password" required fullWidth size="small" /></Field>
+      <Field label="Rolle">
+        <TextField select name="role" defaultValue="Employee" fullWidth size="small">
+          <MenuItem value="Employee">Mitarbeitende:r</MenuItem>
+          <MenuItem value="Manager">Führungskraft</MenuItem>
+          <MenuItem value="Administrator">Administration</MenuItem>
+        </TextField>
+      </Field>
+      <Field label="Eintrittsdatum"><TextField name="startDate" type="date" required fullWidth size="small" /></Field>
+      <Field label="Austrittsdatum"><TextField name="endDate" type="date" fullWidth size="small" /></Field>
+      <Field label="Zugeordnete Führungskraft">
+        <TextField select name="managerId" defaultValue="" fullWidth size="small">
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </TextField>
+      </Field>
+      <Field label="Urlaubsfreigabe durch">
+        <TextField select name="vacationApprovalManagerId" defaultValue="" fullWidth size="small">
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </TextField>
+      </Field>
+      <Field label="Urlaubstage"><TextField name="vacationEntitlementDays" type="number" defaultValue="0" required fullWidth size="small" /></Field>
+      <Field label="Aktiv"><FormControlLabel control={<Checkbox name="isActive" defaultChecked />} label="Aktiv" /></Field>
+      <Box className="form-submit" sx={{ display: 'flex', alignItems: 'end', gridColumn: { xs: 'auto', md: '1 / -1' } }}>
+        <Button type="submit" variant="contained">Speichern</Button>
+      </Box>
+    </Box>
   )
 }
 
@@ -488,40 +530,47 @@ function EmployeeDetailsForm({ employee, managers, onSaved, setError }: { employ
   }
 
   return (
-    <form className="form-grid admin-form" onSubmit={event => void submit(event)}>
-      <Field label="Anzeigename"><input name="displayName" defaultValue={employee.displayName} maxLength={120} required /></Field>
-      <Field label="Geschäftliche E-Mail"><input name="email" type="email" defaultValue={employee.email} required /></Field>
-      <Field label="Neues Passwort (optional)"><input name="password" type="password" minLength={12} placeholder="Nur bei Änderung" /></Field>
+    <Box component="form" className="form-grid admin-form" onSubmit={event => void submit(event)} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
+      <Field label="Anzeigename"><TextField name="displayName" defaultValue={employee.displayName} required fullWidth size="small" /></Field>
+      <Field label="Geschäftliche E-Mail"><TextField name="email" type="email" defaultValue={employee.email} required fullWidth size="small" /></Field>
+      <Field label="Neues Passwort (optional)"><TextField name="password" type="password" placeholder="Nur bei Änderung" fullWidth size="small" /></Field>
       <Field label="Rolle">
-        <select name="role" defaultValue={employee.role}>
+        <TextField select name="role" defaultValue={employee.role} fullWidth size="small">
           {['Employee', 'Manager', 'Administrator'].map(role => (
-            <option value={role} key={role}>{role === 'Employee' ? 'Mitarbeitende:r' : role === 'Manager' ? 'Führungskraft' : 'Administration'}</option>
+            <MenuItem value={role} key={role}>{role === 'Employee' ? 'Mitarbeitende:r' : role === 'Manager' ? 'Führungskraft' : 'Administration'}</MenuItem>
           ))}
-        </select>
+        </TextField>
       </Field>
-      <Field label="Eintrittsdatum"><input name="startDate" type="date" defaultValue={employee.startDate} required /></Field>
-      <Field label="Austrittsdatum"><input name="endDate" type="date" defaultValue={employee.endDate ?? ''} /></Field>
+      <Field label="Eintrittsdatum"><TextField name="startDate" type="date" defaultValue={employee.startDate} required fullWidth size="small" /></Field>
+      <Field label="Austrittsdatum"><TextField name="endDate" type="date" defaultValue={employee.endDate ?? ''} fullWidth size="small" /></Field>
       <Field label="Zugeordnete Führungskraft">
-        <select name="managerId" defaultValue={employee.managerId ?? ''}>
-          <option value="">Keine Zuordnung</option>
-          {managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}
-        </select>
+        <TextField select name="managerId" defaultValue={employee.managerId ?? ''} fullWidth size="small">
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </TextField>
       </Field>
       <Field label="Urlaubsfreigabe durch">
-        <select name="vacationApprovalManagerId" defaultValue={employee.vacationApprovalManagerId ?? ''}>
-          <option value="">Keine Zuordnung</option>
-          {managers.map(manager => <option value={manager.id} key={manager.id}>{manager.displayName}</option>)}
-        </select>
+        <TextField select name="vacationApprovalManagerId" defaultValue={employee.vacationApprovalManagerId ?? ''} fullWidth size="small">
+          <MenuItem value="">Keine Zuordnung</MenuItem>
+          {managers.map(manager => <MenuItem value={manager.id} key={manager.id}>{manager.displayName}</MenuItem>)}
+        </TextField>
       </Field>
-      <Field label="Urlaubstage"><input name="vacationEntitlementDays" type="number" min="0" step="0.5" defaultValue={employee.vacationEntitlementDays} required /></Field>
-      <Field label="Aktiv"><input name="isActive" type="checkbox" defaultChecked={employee.isActive} /></Field>
-      <div className="form-submit"><button>Änderungen speichern</button></div>
-    </form>
+      <Field label="Urlaubstage"><TextField name="vacationEntitlementDays" type="number" defaultValue={employee.vacationEntitlementDays} required fullWidth size="small" /></Field>
+      <Field label="Aktiv"><FormControlLabel control={<Checkbox name="isActive" defaultChecked={employee.isActive} />} label="Aktiv" /></Field>
+      <Box className="form-submit" sx={{ display: 'flex', alignItems: 'end', gridColumn: { xs: 'auto', md: '1 / -1' } }}>
+        <Button type="submit" variant="contained">Änderungen speichern</Button>
+      </Box>
+    </Box>
   )
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label>{label}{children}</label>
+  return (
+    <Box sx={{ display: 'grid', gap: 1 }}>
+      <Typography variant="subtitle2" sx={{ color: 'text.secondary', fontWeight: 700 }}>{label}</Typography>
+      {children}
+    </Box>
+  )
 }
 
 function Empty({ text }: { text: string }) {
@@ -529,7 +578,7 @@ function Empty({ text }: { text: string }) {
 }
 
 function Status({ value, status }: { value: string; status: string }) {
-  return <span className={`status ${status.toLowerCase()}`}>{value}</span>
+  return <Chip label={value} size="small" color={status === 'Approved' || status === 'Reported' ? 'success' : status === 'Pending' ? 'warning' : 'default'} variant={status === 'Approved' || status === 'Reported' ? 'filled' : 'outlined'} className={`status ${status.toLowerCase()}`} />
 }
 
 async function decide(id: string, approve: boolean, load: () => void, setError: (value: string) => void) {
