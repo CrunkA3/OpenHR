@@ -328,6 +328,7 @@ function Admin({ setError }: { setError: (value: string) => void }) {
             </div>
           </div>
           <EmployeeDetailsForm
+            key={selectedEmployee.id}
             employee={selectedEmployee}
             managers={managers}
             onSaved={updated => {
