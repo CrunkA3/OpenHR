@@ -4,11 +4,18 @@ import type { FormEvent, ReactNode } from 'react'
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, LogOut, Menu, Plus, Users, X } from 'lucide-react'
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Checkbox,
   Chip,
+  Drawer,
   FormControlLabel,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
   MenuItem,
   Paper,
   TextField,
@@ -115,46 +122,37 @@ function App() {
 
   return (
     <main className="workspace">
-      <aside className={`sidebar ${menuOpen ? 'open' : ''}`} aria-label="Hauptnavigation">
-        <div className="brand">
-          <span>OH</span>
-          <strong>OpenHR</strong>
-          <button className="icon-button close-menu" onClick={() => setMenuOpen(false)} aria-label="Navigation schließen">
-            <X size={20} />
-          </button>
-        </div>
+      <Drawer
+        variant="temporary"
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { width: 264, boxSizing: 'border-box' },
+        }}
+      >
+        <SidebarContent employee={employee} view={view} navigation={navigation} onNavigate={navigate} onLogout={() => void logout()} onClose={() => setMenuOpen(false)} />
+      </Drawer>
 
-        <nav>
-          {navigation.filter(item => item.visible).map(item => (
-            <button className={view === item.id ? 'nav-item active' : 'nav-item'} key={item.id} onClick={() => navigate(item.id)}>
-              <item.icon size={19} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="profile">
-          <div>
-            <strong>{employee.displayName}</strong>
-            <span>{roleLabel(employee.role)}</span>
-          </div>
-          <button className="icon-button" onClick={() => void logout()} aria-label="Abmelden" title="Abmelden">
-            <LogOut size={19} />
-          </button>
-        </div>
-      </aside>
+      <Box component="aside" className="sidebar" aria-label="Hauptnavigation" sx={{ display: { xs: 'none', md: 'flex' } }}>
+        <SidebarContent employee={employee} view={view} navigation={navigation} onNavigate={navigate} onLogout={() => void logout()} onClose={() => setMenuOpen(false)} />
+      </Box>
 
       <section className="content">
         <header className="topbar">
-          <button className="icon-button menu-button" onClick={() => setMenuOpen(true)} aria-label="Navigation öffnen"><Menu size={22} /></button>
+          <IconButton className="icon-button menu-button" onClick={() => setMenuOpen(true)} aria-label="Navigation öffnen" sx={{ display: { xs: 'inline-flex', md: 'none' } }}>
+            <Menu size={22} />
+          </IconButton>
           <div>
             <p className="eyebrow">OpenHR</p>
             <h1>{title}</h1>
           </div>
-          <button className="icon-button notification-button" aria-label={`${notifications.length} Benachrichtigungen`} title="Benachrichtigungen">
-            <Bell size={20} />
-            <span>{notifications.length}</span>
-          </button>
+          <Badge badgeContent={notifications.length} color="error" overlap="circular">
+            <IconButton className="icon-button notification-button" aria-label={`${notifications.length} Benachrichtigungen`} title="Benachrichtigungen" sx={{ bgcolor: 'background.paper' }}>
+              <Bell size={20} />
+            </IconButton>
+          </Badge>
         </header>
 
         {error && <p className="error" role="alert">{error}</p>}
@@ -165,6 +163,70 @@ function App() {
         {view === 'admin' && <Admin setError={setError} />}
       </section>
     </main>
+  )
+}
+
+function SidebarContent({
+  employee,
+  view,
+  navigation,
+  onNavigate,
+  onLogout,
+  onClose,
+}: {
+  employee: Employee
+  view: View
+  navigation: Array<{ id: View; label: string; icon: typeof CalendarDays; visible: boolean }>
+  onNavigate: (next: View) => void
+  onLogout: () => void
+  onClose: () => void
+}) {
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', bgcolor: 'rgba(237, 243, 241, 0.94)' }}>
+      <Box className="brand" sx={{ px: 1.5, pb: 2.5, alignItems: 'center' }}>
+        <Box component="span" sx={{ width: 36, height: 36, borderRadius: 1.5, bgcolor: 'primary.main', color: 'common.white', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 800 }}>OH</Box>
+        <Typography component="strong" sx={{ fontSize: '1.1rem', fontWeight: 700, color: 'text.primary' }}>OpenHR</Typography>
+        <IconButton className="icon-button close-menu" onClick={onClose} aria-label="Navigation schließen" sx={{ ml: 'auto', display: { xs: 'inline-flex', md: 'none' } }}>
+          <X size={20} />
+        </IconButton>
+      </Box>
+
+      <List disablePadding sx={{ px: 1, py: 0, width: '100%' }}>
+        {navigation.filter(item => item.visible).map(item => {
+          const Icon = item.icon
+          return (
+            <ListItemButton
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              selected={view === item.id}
+              sx={{ borderRadius: 1.5, mb: 0.5, px: 1.25, py: 0.9, color: view === item.id ? 'primary.dark' : 'text.secondary', bgcolor: view === item.id ? 'rgba(8,120,110,0.08)' : 'transparent', '&.Mui-selected': { bgcolor: 'rgba(8,120,110,0.10)', color: 'primary.dark' } }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                <Icon size={19} />
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                sx={{
+                  '& .MuiListItemText-primary': {
+                    fontWeight: view === item.id ? 700 : 500,
+                  },
+                }}
+              />
+            </ListItemButton>
+          )
+        })}
+      </List>
+
+      <Box className="profile" sx={{ mt: 'auto', px: 1.75, py: 1.5 }}>
+        <Box>
+          <Typography component="strong" sx={{ display: 'block', fontSize: '.9rem', fontWeight: 700 }}>{employee.displayName}</Typography>
+          <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.75rem' }}>{roleLabel(employee.role)}</Typography>
+        </Box>
+        <IconButton onClick={onLogout} aria-label="Abmelden" title="Abmelden" className="icon-button">
+          <LogOut size={19} />
+        </IconButton>
+      </Box>
+    </Box>
   )
 }
 
@@ -183,8 +245,8 @@ function Calendar({ month, entries, onPrevious, onNext }: { month: Date; entries
           <h2>{label}</h2>
         </div>
         <div className="month-controls">
-          <button className="icon-button" onClick={onPrevious} aria-label="Vorheriger Monat"><ChevronLeft size={20} /></button>
-          <button className="icon-button" onClick={onNext} aria-label="Nächster Monat"><ChevronRight size={20} /></button>
+          <IconButton className="icon-button" onClick={onPrevious} aria-label="Vorheriger Monat"><ChevronLeft size={20} /></IconButton>
+          <IconButton className="icon-button" onClick={onNext} aria-label="Nächster Monat"><ChevronRight size={20} /></IconButton>
         </div>
       </div>
 
@@ -264,8 +326,8 @@ function Approvals({ pending, onDecided, setError }: { pending: PendingAbsence[]
                 <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</span>
               </div>
               <div className="row-actions">
-                <button onClick={() => void decide(absence.id, true, onDecided, setError)}>Genehmigen</button>
-                <button className="secondary" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</button>
+                <Button variant="contained" size="small" onClick={() => void decide(absence.id, true, onDecided, setError)}>Genehmigen</Button>
+                <Button variant="outlined" size="small" color="inherit" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</Button>
               </div>
             </li>
           ))}
@@ -318,13 +380,13 @@ function Admin({ setError }: { setError: (value: string) => void }) {
           <ul className="data-list admin-list">
             {employees.map(item => (
               <li key={item.id} className={selectedEmployee?.id === item.id ? 'selected' : ''}>
-                <button type="button" className="admin-account" onClick={() => setSelectedId(item.id)}>
-                  <div>
-                    <strong>{item.displayName}</strong>
-                    <span>{item.email} · {roleLabel(item.role)}</span>
-                  </div>
-                  <span className="vacation">{item.vacationEntitlementDays} Urlaubstage</span>
-                </button>
+                <Button type="button" className="admin-account" onClick={() => setSelectedId(item.id)} sx={{ justifyContent: 'space-between', py: 1.25, px: 1, textAlign: 'left', color: 'text.primary', borderRadius: 1.5, bgcolor: selectedEmployee?.id === item.id ? 'rgba(8,120,110,0.08)' : 'transparent' }}>
+                  <Box>
+                    <Typography component="strong" sx={{ display: 'block', fontWeight: 700 }}>{item.displayName}</Typography>
+                    <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.85rem' }}>{item.email} · {roleLabel(item.role)}</Typography>
+                  </Box>
+                  <Typography component="span" className="vacation" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{item.vacationEntitlementDays} Urlaubstage</Typography>
+                </Button>
               </li>
             ))}
           </ul>
