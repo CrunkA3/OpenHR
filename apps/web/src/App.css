@@ -87,6 +87,7 @@ button:not(.icon-button):not(.nav-item):hover { background: var(--teal-dark); }
 .admin-form input[type='checkbox'] { width: auto; min-height: auto; accent-color: var(--teal); }
 .vacation { white-space: nowrap; }
 
+<<<<<<< Updated upstream
 .error { margin: 0 0 1rem; padding: .75rem 1rem; border-left: 4px solid #d44c2d; background: #fff1ef; color: #7f2f1d; border-radius: 4px; }
 .login-page { display: grid; min-height: 100vh; place-items: center; padding: 1.5rem; background: linear-gradient(135deg, #e5f0ec 0%, #f7f7f3 55%, #f8e9dc 100%); }
 .login-panel { width: min(100%, 27rem); padding: 2.5rem; border: 1px solid #d8e0dc; border-radius: 8px; background: rgba(255,255,255,.92); box-shadow: 0 1rem 3.5rem rgba(29, 55, 49, .12); }
@@ -95,6 +96,52 @@ button:not(.icon-button):not(.nav-item):hover { background: var(--teal-dark); }
 .login-copy { margin-bottom: 2rem; color: var(--muted); }
 .login-panel form { display: grid; gap: 1rem; }
 .login-panel form button { margin-top: .5rem; }
+=======
+.summary-grid {
+  align-items: stretch;
+}
+
+.summary-grid .MuiPaper-root {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.summary-grid .MuiPaper-root:hover {
+  transform: translateY(-1px);
+  border-color: rgba(8, 120, 110, 0.2);
+}
+
+.data-list li.dense-row {
+  border-radius: 0.9rem;
+}
+
+.data-list li.dense-row:hover {
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-submit {
+  align-items: end;
+}
+
+.empty {
+  margin: 1rem 0 0;
+  color: rgba(15, 23, 42, 0.6);
+}
+
+@media (max-width: 900px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .content {
+    padding-top: 1.25rem;
+  }
+}
+>>>>>>> Stashed changes
 
 @media (max-width: 760px) {
   .workspace { display: block; }
