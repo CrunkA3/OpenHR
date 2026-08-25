@@ -3,12 +3,17 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Bell, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, Clock3, LogOut, Menu, Sparkles, TrendingUp, Users, X } from 'lucide-react'
 import {
+  AppBar,
   Box,
   Button,
   Checkbox,
   Chip,
+  CssBaseline,
+  Divider,
+  Drawer,
   FormControl,
   FormControlLabel,
+  IconButton,
   InputLabel,
   List,
   ListItemButton,
@@ -17,8 +22,11 @@ import {
   Paper,
   Select,
   Stack,
+  ThemeProvider,
   TextField,
+  Toolbar,
   Typography,
+  createTheme,
 } from '@mui/material'
 import { PersonAddAlt, SaveAs } from '@mui/icons-material'
 import './App.css'
@@ -42,6 +50,49 @@ type PendingAbsence = Absence & { employee: { displayName: string } }
 type CalendarEntry = { id: string; employeeId: string; employeeName: string; startsOn: string; endsOn: string; isOwn: boolean; absenceType: string | null }
 type Notification = { id: string; message: string; createdAt: string }
 type View = 'calendar' | 'requests' | 'approvals' | 'admin'
+
+const theme = createTheme({
+  palette: {
+    primary: { main: '#08786e', light: '#d7ebe5', dark: '#075d56' },
+    secondary: { main: '#4b5567' },
+    background: { default: '#f4f6f8', paper: '#ffffff' },
+    text: { primary: '#17233a', secondary: '#68758a' },
+  },
+  shape: { borderRadius: 12 },
+  typography: {
+    fontFamily: 'Inter, "Segoe UI", sans-serif',
+    h1: { fontWeight: 700 },
+    h2: { fontWeight: 700 },
+    h3: { fontWeight: 700 },
+    h4: { fontWeight: 700 },
+    h5: { fontWeight: 700 },
+    h6: { fontWeight: 700 },
+    button: { textTransform: 'none', fontWeight: 700 },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 10,
+          textTransform: 'none',
+          boxShadow: 'none',
+          '&:hover': { boxShadow: 'none' },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: { borderColor: '#dce2e9' },
+      },
+    },
+    MuiTextField: {
+      defaultProps: { variant: 'outlined' },
+    },
+    MuiSelect: {
+      defaultProps: { variant: 'outlined' },
+    },
+  },
+})
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -143,95 +194,141 @@ function App() {
   ]
 
   return (
-    <main className="workspace">
-      <aside className={`sidebar ${menuOpen ? 'open' : ''}`} aria-label="Hauptnavigation">
-        <div className="brand">
-          <span>OH</span>
-          <strong>OpenHR</strong>
-          <button className="icon-button close-menu" onClick={() => setMenuOpen(false)} aria-label="Navigation schließen">
-            <X size={20} />
-          </button>
-        </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '16.5rem minmax(0, 1fr)' }, minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Drawer
+          variant="temporary"
+          open={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { width: 264, boxSizing: 'border-box', bgcolor: '#edf3f1', borderRight: '1px solid #d4dce5' },
+          }}
+        >
+          <SidebarContent employee={employee} view={view} navigation={navigation} navigate={navigate} logout={logout} onClose={() => setMenuOpen(false)} />
+        </Drawer>
 
-        <nav>
-          {navigation.filter(item => item.visible).map(item => (
-            <button className={view === item.id ? 'nav-item active' : 'nav-item'} key={item.id} onClick={() => navigate(item.id)}>
-              <item.icon size={19} />
-              {item.label}
-            </button>
-          ))}
-        </nav>
+        <Box component="aside" sx={{ display: { xs: 'none', md: 'flex' }, flexDirection: 'column', width: '100%', height: '100vh', position: 'sticky', top: 0, bgcolor: '#edf3f1', borderRight: '1px solid #d4dce5', p: 2.5 }}>
+          <SidebarContent employee={employee} view={view} navigation={navigation} navigate={navigate} logout={logout} onClose={() => setMenuOpen(false)} desktop />
+        </Box>
 
-        <div className="profile">
-          <div>
-            <strong>{employee.displayName}</strong>
-            <span>{roleLabel(employee.role)}</span>
-          </div>
-          <button className="icon-button" onClick={() => void logout()} aria-label="Abmelden" title="Abmelden">
-            <LogOut size={19} />
-          </button>
-        </div>
-      </aside>
+        <Box component="section" sx={{ width: '100%', maxWidth: '88rem', px: { xs: 2, md: 4 }, py: { xs: 2, md: 3 } }}>
+          <AppBar position="static" color="transparent" elevation={0} sx={{ mb: 2, bgcolor: 'transparent' }}>
+            <Toolbar disableGutters sx={{ minHeight: 'unset', px: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <IconButton color="primary" sx={{ display: { xs: 'inline-flex', md: 'none' }, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }} onClick={() => setMenuOpen(true)} aria-label="Navigation öffnen">
+                <Menu size={22} />
+              </IconButton>
+              <Box>
+                <Typography variant="overline" sx={{ color: 'primary.main', letterSpacing: 1.2, fontWeight: 700 }}>OpenHR</Typography>
+                <Typography variant="h4" sx={{ lineHeight: 1.1 }}>{title}</Typography>
+              </Box>
+              <IconButton color="primary" sx={{ border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', position: 'relative' }} aria-label={`${notifications.length} Benachrichtigungen`} title="Benachrichtigungen">
+                <Bell size={20} />
+                <Box component="span" sx={{ position: 'absolute', top: -6, right: -6, minWidth: 18, height: 18, borderRadius: '50%', bgcolor: '#e6613d', color: 'white', fontSize: 10, fontWeight: 800, display: 'grid', placeItems: 'center' }}>{notifications.length}</Box>
+              </IconButton>
+            </Toolbar>
+          </AppBar>
 
-      <section className="content">
-        <header className="topbar">
-          <button className="icon-button menu-button" onClick={() => setMenuOpen(true)} aria-label="Navigation öffnen"><Menu size={22} /></button>
-          <div>
-            <p className="eyebrow">OpenHR</p>
-            <h1>{title}</h1>
-          </div>
-          <button className="icon-button notification-button" aria-label={`${notifications.length} Benachrichtigungen`} title="Benachrichtigungen">
-            <Bell size={20} />
-            <span>{notifications.length}</span>
-          </button>
-        </header>
+          {error && <Box component="p" sx={{ mb: 2, p: 1.5, borderLeft: 4, borderColor: 'error.main', bgcolor: 'rgba(211,47,47,0.08)', color: 'error.main', borderRadius: 1 }}>{error}</Box>}
 
-        {error && <p className="error" role="alert">{error}</p>}
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+            {kpiCards.map(card => (
+              <Paper key={card.label} variant="outlined" sx={{ flex: 1, p: 2, borderRadius: 3, minWidth: 0 }}>
+                <Stack direction="row" sx={{ mb: 1, alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: 0.04 }}>{card.label}</Typography>
+                  <Box sx={{ display: 'grid', placeItems: 'center', width: 32, height: 32, borderRadius: 2, bgcolor: card.tone === 'warning' ? 'rgba(199,122,18,0.1)' : card.tone === 'positive' ? 'rgba(8,120,110,0.1)' : 'rgba(75,85,103,0.08)', color: card.tone === 'warning' ? '#c77a12' : card.tone === 'positive' ? '#08786e' : '#4b5567' }}>
+                    {card.tone === 'warning' ? <Clock3 size={16} /> : card.tone === 'positive' ? <TrendingUp size={16} /> : <Sparkles size={16} />}
+                  </Box>
+                </Stack>
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>{card.value}</Typography>
+                <Typography variant="caption" color="text.secondary">{card.trend}</Typography>
+              </Paper>
+            ))}
+          </Stack>
 
-        <div className="kpi-row" aria-label="KPI-Übersicht">
-          {kpiCards.map(card => (
-            <article className={`kpi-card tone-${card.tone}`} key={card.label}>
-              <div className="kpi-header">
-                <span>{card.label}</span>
-                <span className="kpi-icon">{card.tone === 'warning' ? <Clock3 size={16} /> : card.tone === 'positive' ? <TrendingUp size={16} /> : <Sparkles size={16} />}</span>
-              </div>
-              <strong>{card.value}</strong>
-              <small>{card.trend}</small>
-            </article>
-          ))}
-        </div>
+          {view === 'calendar' && (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1.8fr) minmax(18rem, .7fr)' }, gap: 2.5, alignItems: 'start' }}>
+              <Calendar month={month} entries={entries} onPrevious={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() - 1, 1))} onNext={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() + 1, 1))} />
+              <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3 }}>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 1.2 }}>Aussichten</Typography>
+                <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>Bevorstehende Abwesenheiten</Typography>
+                <Stack spacing={1.5}>
+                  {upcomingAbsences.length === 0 ? <Typography color="text.secondary">Keine geplanten Abwesenheiten.</Typography> : upcomingAbsences.map(absence => (
+                    <Box key={absence.id} sx={{ border: '1px solid', borderColor: 'divider', borderLeft: 3, borderLeftColor: 'primary.main', borderRadius: 2, p: 1.5, bgcolor: '#f8fbfb' }}>
+                      <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{absence.absenceType.name}</Typography>
+                        <Status value={statusLabel(absence.status)} status={absence.status} />
+                      </Stack>
+                      <Typography variant="body2" color="text.secondary">{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</Typography>
+                      <Typography variant="body2" color="text.secondary">{absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </Paper>
+            </Box>
+          )}
 
-        {view === 'calendar' && (
-          <div className="dashboard-panels">
-            <Calendar month={month} entries={entries} onPrevious={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() - 1, 1))} onNext={() => setMonth(current => new Date(current.getFullYear(), current.getMonth() + 1, 1))} />
-            <aside className="insight-panel">
-              <div className="panel-heading compact">
-                <div>
-                  <p className="eyebrow">Aussichten</p>
-                  <h2>Bevorstehende Abwesenheiten</h2>
-                </div>
-              </div>
-              <div className="timeline">
-                {upcomingAbsences.length === 0 ? <p className="empty">Keine geplanten Abwesenheiten.</p> : upcomingAbsences.map(absence => (
-                  <div className="timeline-item" key={absence.id}>
-                    <div className="timeline-row">
-                      <strong>{absence.absenceType.name}</strong>
-                      <Status value={statusLabel(absence.status)} status={absence.status} />
-                    </div>
-                    <span className="timeline-meta">{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</span>
-                    <span className="timeline-meta subtle">{absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</span>
-                  </div>
-                ))}
-              </div>
-            </aside>
-          </div>
+          {view === 'requests' && <Requests types={types} absences={absences} onCreated={() => void load()} setError={setError} />}
+          {view === 'approvals' && <Approvals pending={pending} onDecided={() => void load()} setError={setError} />}
+          {view === 'admin' && <Admin setError={setError} />}
+        </Box>
+      </Box>
+    </ThemeProvider>
+  )
+}
+
+function SidebarContent({ employee, view, navigation, navigate, logout, onClose, desktop = false }: { employee: Employee; view: View; navigation: { id: View; label: string; icon: typeof CalendarDays; visible: boolean }[]; navigate: (next: View) => void; logout: () => Promise<void>; onClose: () => void; desktop?: boolean }) {
+  return (
+    <>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1, pb: 2.5, pt: 0.5 }}>
+        <Box sx={{ width: 36, height: 36, borderRadius: 2, display: 'grid', placeItems: 'center', bgcolor: 'primary.main', color: 'white', fontSize: 12, fontWeight: 800 }}>OH</Box>
+        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>OpenHR</Typography>
+        {!desktop && (
+          <IconButton size="small" onClick={onClose} aria-label="Navigation schließen"><X size={18} /></IconButton>
         )}
+      </Box>
 
-        {view === 'requests' && <Requests types={types} absences={absences} onCreated={() => void load()} setError={setError} />}
-        {view === 'approvals' && <Approvals pending={pending} onDecided={() => void load()} setError={setError} />}
-        {view === 'admin' && <Admin setError={setError} />}
-      </section>
-    </main>
+      <Stack spacing={0.75} sx={{ px: 1 }}>
+        {navigation.filter(item => item.visible).map(item => {
+          const Icon = item.icon
+          return (
+            <Button
+              key={item.id}
+              fullWidth
+              variant={view === item.id ? 'contained' : 'text'}
+              color={view === item.id ? 'primary' : 'inherit'}
+              onClick={() => { navigate(item.id); onClose() }}
+              sx={{
+                justifyContent: 'flex-start',
+                borderRadius: 2,
+                px: 1.5,
+                py: 1,
+                color: view === item.id ? 'white' : '#425168',
+                bgcolor: view === item.id ? 'primary.main' : 'transparent',
+                '&:hover': { bgcolor: view === item.id ? 'primary.dark' : 'rgba(8,120,110,0.08)' },
+              }}
+              startIcon={<Icon size={18} />}
+            >
+              {item.label}
+            </Button>
+          )
+        })}
+      </Stack>
+
+      <Divider sx={{ my: 2 }} />
+
+      <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5, px: 1.5, pt: 1 }}>
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{employee.displayName}</Typography>
+          <Typography variant="caption" color="text.secondary">{roleLabel(employee.role)}</Typography>
+        </Box>
+        <IconButton color="primary" aria-label="Abmelden" title="Abmelden" onClick={() => void logout()}>
+          <LogOut size={18} />
+        </IconButton>
+      </Box>
+    </>
   )
 }
 
