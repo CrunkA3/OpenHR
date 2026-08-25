@@ -238,102 +238,133 @@ function Calendar({ month, entries, onPrevious, onNext }: { month: Date; entries
   const label = new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' }).format(month)
 
   return (
-    <section className="calendar-panel">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">Teamübersicht</p>
-          <h2>{label}</h2>
-        </div>
-        <div className="month-controls">
+    <Paper elevation={0} className="calendar-panel" sx={{ overflow: 'hidden', borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+      <Box className="panel-heading" sx={{ px: 3, py: 2.25, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="overline" className="eyebrow" sx={{ color: 'primary.main', display: 'block', mb: 0.5 }}>Teamübersicht</Typography>
+          <Typography variant="h5" component="h2" sx={{ m: 0 }}>{label}</Typography>
+        </Box>
+        <Box className="month-controls" sx={{ display: 'flex', gap: 1 }}>
           <IconButton className="icon-button" onClick={onPrevious} aria-label="Vorheriger Monat"><ChevronLeft size={20} /></IconButton>
           <IconButton className="icon-button" onClick={onNext} aria-label="Nächster Monat"><ChevronRight size={20} /></IconButton>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
-      <div className="weekdays">{['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(day => <span key={day}>{day}</span>)}</div>
+      <Box className="weekdays" sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', bgcolor: 'grey.50', borderTop: '1px solid', borderColor: 'divider' }}>
+        {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(day => <Box key={day} sx={{ py: 1.25, textAlign: 'center', color: 'text.secondary', fontSize: '.72rem', fontWeight: 700 }}>{day}</Box>)}
+      </Box>
 
-      <div className="calendar-grid">
+      <Box className="calendar-grid" sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
         {days.map(day => {
           const value = dateValue(day)
           const relevant = entries.filter(entry => entry.startsOn <= value && entry.endsOn >= value)
           return (
-            <div className={`calendar-day ${day.getMonth() === month.getMonth() ? '' : 'outside'} ${day.getDay() === 0 || day.getDay() === 6 ? 'weekend' : ''}`} key={value}>
-              <time dateTime={value}>{day.getDate()}</time>
-              <div className="day-entries">
+            <Box
+              key={value}
+              className={`calendar-day ${day.getMonth() === month.getMonth() ? '' : 'outside'} ${day.getDay() === 0 || day.getDay() === 6 ? 'weekend' : ''}`}
+              sx={{
+                minHeight: { xs: 96, md: 140 },
+                p: 1,
+                borderTop: '1px solid',
+                borderRight: '1px solid',
+                borderColor: 'divider',
+                bgcolor: day.getMonth() === month.getMonth() ? 'background.paper' : 'grey.50',
+                color: 'text.primary',
+                '&:nth-of-type(7n)': { borderRight: 0 },
+              }}
+            >
+              <Box component="time" dateTime={value} sx={{ display: 'block', color: 'text.secondary', fontSize: '.8rem', fontWeight: 700 }}>{day.getDate()}</Box>
+              <Box className="day-entries" sx={{ display: 'grid', gap: 0.6, mt: 0.7 }}>
                 {relevant.map(entry => (
-                  <span className={entry.isOwn ? 'calendar-entry own' : 'calendar-entry'} key={entry.id} title={`${entry.employeeName}: ${entry.absenceType ?? 'Abwesend'}`}>
-                    <b>{entry.employeeName}</b>
-                    <em>{entry.absenceType ?? 'Abwesend'}</em>
-                  </span>
+                  <Box
+                    key={entry.id}
+                    component="span"
+                    className={entry.isOwn ? 'calendar-entry own' : 'calendar-entry'}
+                    title={`${entry.employeeName}: ${entry.absenceType ?? 'Abwesend'}`}
+                    sx={{
+                      display: 'grid',
+                      gap: 0.15,
+                      p: 0.65,
+                      borderRadius: 1,
+                      borderLeft: '3px solid',
+                      borderColor: entry.isOwn ? 'primary.main' : 'grey.400',
+                      bgcolor: entry.isOwn ? 'rgba(8,120,110,0.08)' : 'grey.100',
+                      color: entry.isOwn ? 'primary.dark' : 'text.primary',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box component="b" sx={{ fontSize: '.7rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.employeeName}</Box>
+                    <Box component="em" sx={{ fontStyle: 'normal', fontSize: '.62rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.absenceType ?? 'Abwesend'}</Box>
+                  </Box>
                 ))}
-              </div>
-            </div>
+              </Box>
+            </Box>
           )
         })}
-      </div>
-    </section>
+      </Box>
+    </Paper>
   )
 }
 
 function Requests({ types, absences, onCreated, setError }: { types: AbsenceType[]; absences: Absence[]; onCreated: () => void; setError: (value: string) => void }) {
   return (
-    <div className="stack">
-      <section className="form-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Abwesenheit</p>
-            <h2>Neuen Antrag stellen</h2>
-          </div>
-        </div>
+    <Box className="stack" sx={{ display: 'grid', gap: 2.5 }}>
+      <Paper elevation={0} className="form-panel" sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Box className="panel-heading" sx={{ px: 0, py: 0, pb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography variant="overline" className="eyebrow" sx={{ color: 'primary.main', display: 'block', mb: 0.5 }}>Abwesenheit</Typography>
+            <Typography variant="h5" component="h2" sx={{ m: 0 }}>Neuen Antrag stellen</Typography>
+          </Box>
+        </Box>
         <AbsenceForm types={types} onCreated={onCreated} setError={setError} />
-      </section>
+      </Paper>
 
-      <section className="list-panel">
-        <h2>Meine Anträge</h2>
+      <Paper elevation={0} className="list-panel" sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>Meine Anträge</Typography>
         {absences.length === 0 ? <Empty text="Noch keine Anträge." /> : (
-          <ul className="data-list">
+          <Box component="ul" className="data-list" sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid' }}>
             {absences.map(absence => (
-              <li key={absence.id}>
-                <div>
-                  <strong>{absence.absenceType.name}</strong>
-                  <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)} · {absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</span>
-                </div>
+              <Box component="li" key={absence.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Box>
+                  <Typography component="strong" sx={{ display: 'block', fontWeight: 700 }}>{absence.absenceType.name}</Typography>
+                  <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.85rem' }}>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)} · {absence.amount} {absence.absenceType.unit === 'Hours' ? 'Std.' : 'Tage'}</Typography>
+                </Box>
                 <Status value={statusLabel(absence.status)} status={absence.status} />
-              </li>
+              </Box>
             ))}
-          </ul>
+          </Box>
         )}
-      </section>
-    </div>
+      </Paper>
+    </Box>
   )
 }
 
 function Approvals({ pending, onDecided, setError }: { pending: PendingAbsence[]; onDecided: () => void; setError: (value: string) => void }) {
   return (
-    <section className="list-panel">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">Eingang</p>
-          <h2>Offene Freigaben</h2>
-        </div>
-      </div>
+    <Paper elevation={0} className="list-panel" sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+      <Box className="panel-heading" sx={{ px: 0, py: 0, pb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="overline" className="eyebrow" sx={{ color: 'primary.main', display: 'block', mb: 0.5 }}>Eingang</Typography>
+          <Typography variant="h5" component="h2" sx={{ m: 0 }}>Offene Freigaben</Typography>
+        </Box>
+      </Box>
       {pending.length === 0 ? <Empty text="Keine offenen Anträge." /> : (
-        <ul className="data-list">
+        <Box component="ul" className="data-list" sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid' }}>
           {pending.map(absence => (
-            <li key={absence.id}>
-              <div>
-                <strong>{absence.employee.displayName} · {absence.absenceType.name}</strong>
-                <span>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</span>
-              </div>
-              <div className="row-actions">
+            <Box component="li" key={absence.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, py: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Box>
+                <Typography component="strong" sx={{ display: 'block', fontWeight: 700 }}>{absence.employee.displayName} · {absence.absenceType.name}</Typography>
+                <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.85rem' }}>{germanDate(absence.startsOn)} bis {germanDate(absence.endsOn)}</Typography>
+              </Box>
+              <Box className="row-actions" sx={{ display: 'flex', gap: 1 }}>
                 <Button variant="contained" size="small" onClick={() => void decide(absence.id, true, onDecided, setError)}>Genehmigen</Button>
                 <Button variant="outlined" size="small" color="inherit" onClick={() => void decide(absence.id, false, onDecided, setError)}>Ablehnen</Button>
-              </div>
-            </li>
+              </Box>
+            </Box>
           ))}
-        </ul>
+        </Box>
       )}
-    </section>
+    </Paper>
   )
 }
 
@@ -354,15 +385,15 @@ function Admin({ setError }: { setError: (value: string) => void }) {
   const managers = employees.filter(item => item.role !== 'Employee' && item.id !== selectedEmployee?.id)
 
   return (
-    <div className="admin-grid">
-      <section className="form-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Stammdaten</p>
-            <h2>Mitarbeitende anlegen</h2>
-          </div>
+    <Box className="admin-grid" sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'minmax(22rem, 1.15fr) minmax(18rem, .85fr) minmax(18rem, 1fr)' }, gap: 2.5 }}>
+      <Paper elevation={0} className="form-panel" sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Box className="panel-heading" sx={{ px: 0, py: 0, pb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography variant="overline" className="eyebrow" sx={{ color: 'primary.main', display: 'block', mb: 0.5 }}>Stammdaten</Typography>
+            <Typography variant="h5" component="h2" sx={{ m: 0 }}>Mitarbeitende anlegen</Typography>
+          </Box>
           <Plus size={22} />
-        </div>
+        </Box>
         <EmployeeForm
           managers={managers}
           onCreated={created => {
@@ -372,35 +403,35 @@ function Admin({ setError }: { setError: (value: string) => void }) {
           }}
           setError={setError}
         />
-      </section>
+      </Paper>
 
-      <section className="list-panel admin-list-panel">
-        <h2>Konten</h2>
+      <Paper elevation={0} className="list-panel admin-list-panel" sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>Konten</Typography>
         {employees.length === 0 ? <Empty text="Noch keine Konten." /> : (
-          <ul className="data-list admin-list">
+          <Box component="ul" className="data-list admin-list" sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid' }}>
             {employees.map(item => (
-              <li key={item.id} className={selectedEmployee?.id === item.id ? 'selected' : ''}>
-                <Button type="button" className="admin-account" onClick={() => setSelectedId(item.id)} sx={{ justifyContent: 'space-between', py: 1.25, px: 1, textAlign: 'left', color: 'text.primary', borderRadius: 1.5, bgcolor: selectedEmployee?.id === item.id ? 'rgba(8,120,110,0.08)' : 'transparent' }}>
+              <Box component="li" key={item.id} className={selectedEmployee?.id === item.id ? 'selected' : ''} sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
+                <Button type="button" className="admin-account" onClick={() => setSelectedId(item.id)} sx={{ width: '100%', justifyContent: 'space-between', py: 1.25, px: 1, textAlign: 'left', color: 'text.primary', borderRadius: 1.5, bgcolor: selectedEmployee?.id === item.id ? 'rgba(8,120,110,0.08)' : 'transparent' }}>
                   <Box>
                     <Typography component="strong" sx={{ display: 'block', fontWeight: 700 }}>{item.displayName}</Typography>
                     <Typography component="span" sx={{ color: 'text.secondary', fontSize: '.85rem' }}>{item.email} · {roleLabel(item.role)}</Typography>
                   </Box>
                   <Typography component="span" className="vacation" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{item.vacationEntitlementDays} Urlaubstage</Typography>
                 </Button>
-              </li>
+              </Box>
             ))}
-          </ul>
+          </Box>
         )}
-      </section>
+      </Paper>
 
       {selectedEmployee && (
-        <section className="form-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Details</p>
-              <h2>{selectedEmployee.displayName} pflegen</h2>
-            </div>
-          </div>
+        <Paper elevation={0} className="form-panel" sx={{ p: 3, borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+          <Box className="panel-heading" sx={{ px: 0, py: 0, pb: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              <Typography variant="overline" className="eyebrow" sx={{ color: 'primary.main', display: 'block', mb: 0.5 }}>Details</Typography>
+              <Typography variant="h5" component="h2" sx={{ m: 0 }}>{selectedEmployee.displayName} pflegen</Typography>
+            </Box>
+          </Box>
           <EmployeeDetailsForm
             key={selectedEmployee.id}
             employee={selectedEmployee}
@@ -412,9 +443,9 @@ function Admin({ setError }: { setError: (value: string) => void }) {
             }}
             setError={setError}
           />
-        </section>
+        </Paper>
       )}
-    </div>
+    </Box>
   )
 }
 
