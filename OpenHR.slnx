@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="OpenHR.ApiService/OpenHR.ApiService.csproj" />
+  <Project Path="OpenHR.AppHost/OpenHR.AppHost.csproj" />
+  <Project Path="OpenHR.ServiceDefaults/OpenHR.ServiceDefaults.csproj" />
+  <Project Path="OpenHR.Tests/OpenHR.Tests.csproj" />
+  <Project Path="OpenHR.Web/OpenHR.Web.csproj" />
+</Solution>
