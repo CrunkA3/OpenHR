@@ -1,0 +1,92 @@
+@page "/admin/users"
+@attribute [Authorize(Roles = IdentityDatabaseInitializer.AdministratorRole)]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+
+<PageTitle>Benutzerverwaltung</PageTitle>
+
+<FluentLabel Typo="Typography.H1">Benutzerverwaltung</FluentLabel>
+<FluentAccordion>
+
+    <FluentAccordionItem Heading="Neuer Benutzer" Expanded="true">
+        <p>Neue Konten erhalten ein initiales Passwort und müssen es bei der ersten Anmeldung ändern.</p>
+
+        <EditForm Model="Input" method="post" FormName="create-user" OnValidSubmit="CreateUserAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <p role="alert">@message</p>
+            }
+            <FluentStack Orientation="Orientation.Vertical">
+                <div>
+                    <FluentTextField Name="Input.Email" @bind-Value="Input.Email" TextFieldType="TextFieldType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
+                    <FluentValidationMessage For="@(() => Input.Email)" />
+                </div>
+                <div>
+                    <FluentTextField Name="Input.InitialPassword" @bind-Value="Input.InitialPassword" TextFieldType="TextFieldType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
+                    <FluentValidationMessage For="@(() => Input.InitialPassword)" />
+                </div>
+
+                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Benutzer anlegen</FluentButton>
+            </FluentStack>
+        </EditForm>
+    </FluentAccordionItem>
+    <FluentAccordionItem Heading="Bestehende Benutzer" Expanded="true">
+        <FluentDataGrid Items="users">
+            <PropertyColumn Property="@(p => p.Email)" />
+            <PropertyColumn Property="@(p => p.MustChangePassword)" />
+        </FluentDataGrid>
+    </FluentAccordionItem>
+</FluentAccordion>
+
+@code {
+    private IQueryable<ApplicationUser>? users;
+    private string? message;
+
+    [SupplyParameterFromForm]
+    private CreateUserInput Input { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Input ??= new();
+        await LoadUsersAsync();
+    }
+
+    private async Task CreateUserAsync()
+    {
+        var user = new ApplicationUser
+        {
+            UserName = Input.Email,
+            Email = Input.Email,
+            EmailConfirmed = true,
+            MustChangePassword = true
+        };
+        var result = await UserManager.CreateAsync(user, Input.InitialPassword);
+        if (!result.Succeeded)
+        {
+            message = string.Join(" ", result.Errors.Select(error => error.Description));
+            return;
+        }
+
+        message = $"Der Benutzer {user.Email} wurde angelegt.";
+        Input = new();
+        await LoadUsersAsync();
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        users = UserManager.Users.OrderBy(user => user.Email).AsQueryable();
+    }
+
+    private sealed class CreateUserInput
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required, StringLength(100, MinimumLength = 12), DataType(DataType.Password)]
+        public string InitialPassword { get; set; } = "";
+    }
+}

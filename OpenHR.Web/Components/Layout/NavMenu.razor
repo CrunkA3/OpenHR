@@ -12,37 +12,26 @@
             <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Weather</FluentNavLink>
             <AuthorizeView Roles="Administrator">
                 <Authorized>
-                    <FluentNavLink Href="admin/users">Benutzerverwaltung</FluentNavLink>
+                    <FluentNavLink Href="admin/users" Icon="@(new Icons.Regular.Size20.Group())" IconColor="Color.Accent">Benutzerverwaltung</FluentNavLink>
                 </Authorized>
             </AuthorizeView>
             <AuthorizeView>
                 <Authorized>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="Account/Manage">
-                            <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <form action="Account/Logout" method="post">
-                            <AntiforgeryToken />
-                            <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                            <button type="submit" class="nav-link">
-                                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
-                            </button>
-                        </form>
-                    </div>
+                    <FluentNavLink href="Account/Manage" Icon="@(new Icons.Regular.Size20.PersonAccounts())" IconColor="Color.Accent">
+                        @context.User.Identity?.Name
+                    </FluentNavLink>
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <FluentButton Type="ButtonType.Submit" IconStart="@(new Icons.Regular.Size20.ArrowLeft())">
+                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                        </FluentButton>
+                    </form>
                 </Authorized>
                 <NotAuthorized>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="Account/Register">
-                            <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Register
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="Account/Login">
-                            <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
-                        </NavLink>
-                    </div>
+                    <FluentNavLink href="Account/Login" Icon="@(new Icons.Regular.Size20.PersonGuest())" IconColor="Color.Accent">
+                        Anmelden
+                    </FluentNavLink>
                 </NotAuthorized>
             </AuthorizeView>
         </FluentNavMenu>
