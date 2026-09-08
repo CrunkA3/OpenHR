@@ -4,6 +4,8 @@
 @using Microsoft.EntityFrameworkCore
 @inject UserManager<ApplicationUser> UserManager
 
+<FluentMenuProvider />
+
 <PageTitle>Benutzerverwaltung</PageTitle>
 
 <FluentLabel Typo="Typography.H1">Benutzerverwaltung</FluentLabel>
@@ -35,16 +37,47 @@
         </EditForm>
     </FluentAccordionItem>
     <FluentAccordionItem Heading="Bestehende Benutzer" Expanded="true">
-        <FluentDataGrid Items="users">
-            <PropertyColumn Property="@(p => p.Email)" />
-            <PropertyColumn Property="@(p => p.MustChangePassword)" />
+        <FluentDataGrid @ref="grid" Items="FilteredItems" HeaderCellAsButtonWithMenu="true">
+            <PropertyColumn Property="@(p => p.Email)"
+                            Sortable="true"
+                            InitialSortDirection="SortDirection.Ascending"
+                            IsDefaultSortColumn="true"
+                            Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
+                <ColumnOptions>
+                    <div class="search-box">
+                        <FluentSearch Autofocus=true @bind-Value=emailFilter @oninput="HandleEmailFilter" @onkeydown="HandleCloseFilterAsync" @bind-Value:after="HandleClear" Placeholder="Email..." Style="width: 100%;" Label="Filter" />
+                    </div>
+                </ColumnOptions>
+            </PropertyColumn>
+            <PropertyColumn Property="@(p => p.MustChangePassword)" Sortable="true" />
         </FluentDataGrid>
     </FluentAccordionItem>
 </FluentAccordion>
 
 @code {
+    FluentDataGrid<ApplicationUser>? grid;
+
+    string emailFilter = string.Empty;
+
     private IQueryable<ApplicationUser>? users;
     private string? message;
+
+
+    IQueryable<ApplicationUser>? FilteredItems
+    {
+        get
+        {
+            var result = users;
+
+            if (result is not null && !string.IsNullOrEmpty(emailFilter))
+            {
+                result = result.Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains(emailFilter, StringComparison.CurrentCultureIgnoreCase));
+            }
+
+            return result;
+        }
+    }
+
 
     [SupplyParameterFromForm]
     private CreateUserInput Input { get; set; } = default!;
@@ -54,6 +87,38 @@
         Input ??= new();
         await LoadUsersAsync();
     }
+
+
+
+    private void HandleEmailFilter(ChangeEventArgs args)
+    {
+        if (args.Value is string value)
+        {
+            emailFilter = value;
+        }
+    }
+
+    private void HandleClear()
+    {
+        if (string.IsNullOrWhiteSpace(emailFilter))
+        {
+            emailFilter = string.Empty;
+        }
+    }
+
+    private async Task HandleCloseFilterAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            emailFilter = string.Empty;
+        }
+        if (args.Key == "Enter" && grid is not null)
+        {
+            await grid.CloseColumnOptionsAsync();
+        }
+    }
+
+
 
     private async Task CreateUserAsync()
     {
@@ -78,7 +143,7 @@
 
     private async Task LoadUsersAsync()
     {
-        users = UserManager.Users.OrderBy(user => user.Email).AsQueryable();
+        users = (await UserManager.Users.OrderBy(user => user.Email).ToListAsync()).AsQueryable();
     }
 
     private sealed class CreateUserInput
