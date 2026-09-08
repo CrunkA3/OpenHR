@@ -73,7 +73,6 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
-app.UseAntiforgery();
 
 app.UseOutputCache();
 
@@ -83,20 +82,22 @@ app.UseAuthorization();
 app.Use(async (context, next) =>
 {
     if (context.User.Identity?.IsAuthenticated == true
-        && !context.Request.Path.StartsWithSegments("/account/change-password")
+        && !context.Request.Path.StartsWithSegments("/account/ChangePassword")
         && !context.Request.Path.StartsWithSegments("/Account/Logout"))
     {
         var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.GetUserAsync(context.User);
         if (user?.MustChangePassword == true)
         {
-            context.Response.Redirect("/account/change-password");
+            context.Response.Redirect("/account/ChangePassword");
             return;
         }
     }
 
     await next();
 });
+
+app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
