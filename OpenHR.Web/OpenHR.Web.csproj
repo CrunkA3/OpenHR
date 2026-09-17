@@ -14,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.5.3" />
+		<PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.5.4" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.11" />
