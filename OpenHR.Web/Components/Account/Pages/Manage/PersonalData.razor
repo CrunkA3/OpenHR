@@ -6,26 +6,27 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Personal Data</PageTitle>
+<PageTitle>Persönliche Daten</PageTitle>
 
 <StatusMessage />
-<h3>Personal Data</h3>
 
-<div class="row">
-    <div class="col-md-6">
-        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
-        <p>
-            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-        </p>
-        <form action="Account/Manage/DownloadPersonalData" method="post">
-            <AntiforgeryToken />
-            <button class="btn btn-primary" type="submit">Download</button>
-        </form>
-        <p>
-            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
-        </p>
-    </div>
-</div>
+<FluentLabel Typo="Typography.H3">Persönliche Daten</FluentLabel>
+
+<FluentStack Orientation="Orientation.Vertical">
+    <FluentLabel>Dein Konto enthält personenbezogene Daten, die du uns gegeben hast. Auf dieser Seite kannst du diese Daten herunterladen oder löschen.</FluentLabel>
+
+    <form action="Account/Manage/DownloadPersonalData" method="post">
+        <AntiforgeryToken />
+        <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit">Herunterladen</FluentButton>
+    </form>
+
+    <FluentLabel Weight="FontWeight.Bold">Das Löschen dieser Daten entfernt dein Konto dauerhaft und kann nicht rückgängig gemacht werden.</FluentLabel>
+    <FluentAnchor Href="Account/Manage/DeletePersonalData">
+        <FluentIcon Icon="Icons.Regular.Size16.Delete" Color="Color.Error" Slot="start" />
+        Löschen
+    </FluentAnchor>
+</FluentStack>
+
 
 @code {
     [CascadingParameter]
@@ -33,7 +34,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var user  = await UserManager.GetUserAsync(HttpContext.User);
+        var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
             RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
