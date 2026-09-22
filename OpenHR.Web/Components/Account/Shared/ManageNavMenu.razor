@@ -3,32 +3,19 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Profile</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">Email</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Password</NavLink>
-    </li>
+<FluentNavMenu>
+    <FluentNavLink Href="Account/Manage" Match="NavLinkMatch.All">Profil</FluentNavLink>
+    <FluentNavLink Href="Account/Manage/Email">Email</FluentNavLink>
+    <FluentNavLink Href="Account/Manage/ChangePassword">Passwort</FluentNavLink>
     @if (hasExternalLogins)
     {
-        <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">External logins</NavLink>
-        </li>
+        <FluentNavLink Href="Account/Manage/ExternalLogins">Externe Logins</FluentNavLink>
     }
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Passkeys">Passkeys</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">Personal data</NavLink>
-    </li>
-</ul>
+    <FluentNavLink Href="Account/Manage/TwoFactorAuthentication">2FA</FluentNavLink>
+    <FluentNavLink Href="Account/Manage/Passkeys">Passkeys</FluentNavLink>
+    <FluentNavLink Href="Account/Manage/PersonalData">Persönliche Daten</FluentNavLink>
+</FluentNavMenu>
+
 
 @code {
     private bool hasExternalLogins;

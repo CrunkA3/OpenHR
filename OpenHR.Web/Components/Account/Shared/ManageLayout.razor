@@ -1,17 +1,14 @@
 ﻿@inherits LayoutComponentBase
 @layout OpenHR.Web.Components.Layout.MainLayout
 
-<h1>Manage your account</h1>
+<FluentLabel Typo="Typography.H1">Konto Verwalten</FluentLabel>
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-lg-3">
-            <ManageNavMenu />
-        </div>
-        <div class="col-lg-9">
-            @Body
-        </div>
-    </div>
-</div>
+<FluentGrid>
+    <FluentGridItem xs="12" md="4">
+        <ManageNavMenu />
+
+    </FluentGridItem>
+    <FluentGridItem xs="12" md="8">
+        @Body
+    </FluentGridItem>
+</FluentGrid>
