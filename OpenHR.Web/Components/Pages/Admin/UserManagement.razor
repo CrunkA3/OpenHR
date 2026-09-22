@@ -15,25 +15,33 @@
 
 <PageTitle>Benutzerverwaltung</PageTitle>
 
-<FluentStack Orientation="Orientation.Vertical">
+<FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
     <FluentLabel Typo="Typography.H1">Benutzerverwaltung</FluentLabel>
 
     <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
 
-    <FluentDataGrid @ref="grid" Items="FilteredItems">
-        <PropertyColumn Property="@(p => p.Email)"
-                        Sortable="true"
-                        InitialSortDirection="SortDirection.Ascending"
-                        IsDefaultSortColumn="true"
-                        Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
-            <ColumnOptions>
-                <div class="search-box">
-                    <FluentSearch Autofocus=true @bind-Value=emailFilter @oninput="HandleEmailFilter" @onkeydown="HandleCloseFilterAsync" @bind-Value:after="HandleClear" Placeholder="Email..." Style="width: 100%;" Label="Filter" />
-                </div>
-            </ColumnOptions>
-        </PropertyColumn>
-        <PropertyColumn Property="@(p => p.MustChangePassword)" Title="Muss Passwort ändern" Sortable="true" />
-    </FluentDataGrid>
+    <FluentAccordion>
+        <FluentAccordionItem Expanded="true">
+            <HeadingTemplate>
+                <FluentLabel Typo="Typography.H4"><FluentIcon Icon="Icons.Regular.Size16.Filter" Slot="start" />Filter</FluentLabel>
+            </HeadingTemplate>
+            <ChildContent>
+                <FluentSearch Autofocus=true @bind-Value=emailFilter @oninput="HandleEmailFilter" @onkeydown="HandleCloseFilterAsync" @bind-Value:after="HandleClear" Placeholder="test@email.de" Style="width: 100%;" Label="Email" />
+            </ChildContent>
+        </FluentAccordionItem>
+    </FluentAccordion>
+
+    <FluentCard>
+        <FluentDataGrid @ref="grid" Items="FilteredItems">
+            <PropertyColumn Property="@(p => p.Email)"
+                            Sortable="true"
+                            InitialSortDirection="SortDirection.Ascending"
+                            IsDefaultSortColumn="true"
+                            Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
+            </PropertyColumn>
+            <PropertyColumn Property="@(p => p.MustChangePassword)" Title="Muss Passwort ändern" Sortable="true" />
+        </FluentDataGrid>
+    </FluentCard>
 </FluentStack>
 
 @code {
