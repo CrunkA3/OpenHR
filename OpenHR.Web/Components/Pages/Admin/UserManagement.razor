@@ -1,20 +1,34 @@
 @page "/admin/users"
+
 @attribute [Authorize(Roles = IdentityDatabaseInitializer.AdministratorRole)]
+
+@rendermode InteractiveServer
+
+
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
-@inject UserManager<ApplicationUser> UserManager
 
-<FluentMenuProvider />
+@inject UserManager<ApplicationUser> UserManager
+@inject IDialogService DialogService
+@inject IMessageService MessageService
+
 
 <PageTitle>Benutzerverwaltung</PageTitle>
 
 <FluentLabel Typo="Typography.H1">Benutzerverwaltung</FluentLabel>
+
+<FluentStack>
+
+    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
+
+</FluentStack>
+
 <FluentAccordion>
 
     <FluentAccordionItem Heading="Neuer Benutzer" Expanded="true">
         <p>Neue Konten erhalten ein initiales Passwort und müssen es bei der ersten Anmeldung ändern.</p>
 
-        <EditForm Model="Input" method="post" FormName="create-user" OnValidSubmit="CreateUserAsync">
+  @*       <EditForm Model="Input" method="post" FormName="create-user" OnValidSubmit="CreateUserAsync">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -34,28 +48,28 @@
 
                 <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Benutzer anlegen</FluentButton>
             </FluentStack>
-        </EditForm>
+        </EditForm> *@
     </FluentAccordionItem>
     <FluentAccordionItem Heading="Bestehende Benutzer" Expanded="true">
-        <FluentDataGrid @ref="grid" Items="FilteredItems" HeaderCellAsButtonWithMenu="true">
-            <PropertyColumn Property="@(p => p.Email)"
+        <FluentDataGrid @ref="grid" Items="FilteredItems">
+           <PropertyColumn Property="@(p => p.Email)"
                             Sortable="true"
                             InitialSortDirection="SortDirection.Ascending"
                             IsDefaultSortColumn="true"
-                            Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
-                <ColumnOptions>
+                            Filtered="!string.IsNullOrWhiteSpace(emailFilter)">                 <ColumnOptions>
                     <div class="search-box">
                         <FluentSearch Autofocus=true @bind-Value=emailFilter @oninput="HandleEmailFilter" @onkeydown="HandleCloseFilterAsync" @bind-Value:after="HandleClear" Placeholder="Email..." Style="width: 100%;" Label="Filter" />
                     </div>
                 </ColumnOptions>
-            </PropertyColumn>
-            <PropertyColumn Property="@(p => p.MustChangePassword)" Sortable="true" />
+             </PropertyColumn> 
+            <PropertyColumn Property="@(p => p.MustChangePassword)" Title="Muss Passwort ändern" Sortable="true" />
         </FluentDataGrid>
     </FluentAccordionItem>
 </FluentAccordion>
 
 @code {
     FluentDataGrid<ApplicationUser>? grid;
+    private IDialogReference? _dialog;
 
     string emailFilter = string.Empty;
 
@@ -79,8 +93,7 @@
     }
 
 
-    [SupplyParameterFromForm]
-    private CreateUserInput Input { get; set; } = default!;
+    private AddUserPanel.CreateUserInput Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -120,6 +133,52 @@
 
 
 
+    private async Task OpenAddUserPanel(MouseEventArgs args)
+    {
+        MessageService.Clear();
+
+        AddUserPanel.CreateUserInput newUser = new();
+
+
+        _dialog = await DialogService.ShowPanelAsync<AddUserPanel>(newUser, new DialogParameters<AddUserPanel.CreateUserInput>()
+        {
+            Content = newUser,
+            Alignment = HorizontalAlignment.Right,
+            Title = "Benutzer anlegen",
+            PrimaryAction = "Anlegen",
+            SecondaryAction = "Abbrechen",
+            PreventDismissOnOverlayClick = true,
+            ValidateDialogAsync = async () =>
+            {
+                ICollection<ValidationResult> validationResults = new List<ValidationResult>();
+                var result = Validator.TryValidateObject(newUser, new ValidationContext(newUser), validationResults, true);
+
+                MessageService.Clear();
+                if (!result)
+                {
+                    foreach (var validationResult in validationResults)
+                    {
+                        MessageService.ShowMessageBar(options =>
+                        {
+                            options.Intent = MessageIntent.Error;
+                            options.Title = "Validation error";
+                            options.Body = validationResult.ErrorMessage ?? "Validation error";
+                            options.Timestamp = DateTime.Now;
+                            options.Section = App.MESSAGES_DIALOG;
+                        });
+                    }
+                }
+
+                await Task.Delay(100);
+
+                return result;
+            }
+        });
+
+        DialogResult result = await _dialog.Result;
+    }
+
+
     private async Task CreateUserAsync()
     {
         var user = new ApplicationUser
@@ -144,14 +203,5 @@
     private async Task LoadUsersAsync()
     {
         users = (await UserManager.Users.OrderBy(user => user.Email).ToListAsync()).AsQueryable();
-    }
-
-    private sealed class CreateUserInput
-    {
-        [Required, EmailAddress]
-        public string Email { get; set; } = "";
-
-        [Required, StringLength(100, MinimumLength = 12), DataType(DataType.Password)]
-        public string InitialPassword { get; set; } = "";
     }
 }

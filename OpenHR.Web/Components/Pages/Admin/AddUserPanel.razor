@@ -1,0 +1,29 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+@implements IDialogContentComponent<AddUserPanel.CreateUserInput>
+
+<FluentMessageBarProvider Section="@App.MESSAGES_DIALOG" MaxMessageCount="2" />
+
+
+<FluentDialogBody>
+    <div>
+        <FluentTextField Name="Content.Email" @bind-Value="Content.Email" TextFieldType="TextFieldType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
+    </div>
+    <div>
+        <FluentTextField Name="Content.InitialPassword" @bind-Value="Content.InitialPassword" TextFieldType="TextFieldType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
+    </div>
+</FluentDialogBody>
+
+@code {
+    [Parameter]
+    public CreateUserInput Content { get; set; } = default!;
+
+    public sealed class CreateUserInput
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required, StringLength(100, MinimumLength = 12), DataType(DataType.Password)]
+        public string InitialPassword { get; set; } = "";
+    }
+}
