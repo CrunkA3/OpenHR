@@ -12,12 +12,14 @@
             <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Weather</FluentNavLink>
             <AuthorizeView Roles="Administrator">
                 <Authorized>
-                    <FluentNavLink Href="admin/users" Icon="@(new Icons.Regular.Size20.Group())" IconColor="Color.Accent">Benutzerverwaltung</FluentNavLink>
+                    <FluentNavGroup Href="admin" Title="Admin" Icon="@(new Icons.Regular.Size20.ShieldSettings())">
+                        <OpenHR.Web.Components.Pages.Admin.NavMenu />
+                    </FluentNavGroup>
                 </Authorized>
             </AuthorizeView>
             <AuthorizeView>
                 <Authorized>
-                    <FluentNavLink href="Account/Manage" Icon="@(new Icons.Regular.Size20.PersonAccounts())" IconColor="Color.Accent">
+                    <FluentNavLink href="Account/Manage" Icon="@(new Icons.Regular.Size20.Person())" IconColor="Color.Accent">
                         @context.User.Identity?.Name
                     </FluentNavLink>
                     <form action="Account/Logout" method="post">
