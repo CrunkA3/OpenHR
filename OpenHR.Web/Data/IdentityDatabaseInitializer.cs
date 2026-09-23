@@ -13,6 +13,7 @@ public static class IdentityDatabaseInitializer
         var serviceProvider = scope.ServiceProvider;
         var database = serviceProvider.GetRequiredService<ApplicationDbContext>();
         await database.Database.EnsureCreatedAsync();
+        await database.Database.MigrateAsync();
 
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         if (!await roleManager.RoleExistsAsync(AdministratorRole))

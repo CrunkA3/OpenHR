@@ -6,4 +6,6 @@ namespace OpenHR.Web.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : IdentityDbContext<ApplicationUser>(options)
 {
+
+    public DbSet<AttendanceType> AttendanceTypes { get; set; } = default!;
 }
