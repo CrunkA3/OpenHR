@@ -18,7 +18,7 @@
 </FluentStack>
 
 <FluentDataGrid @ref="grid" Items="FilteredItems">
-    <TemplateColumn Title="Name" SortBy="sortByName">
+    <TemplateColumn Title="Name" SortBy="sortByName" IsDefaultSortColumn>
         <FluentTextField Value="@context.AttendanceName"
                          ValueChanged="@(newValue => AttendanceNameChanged(context, newValue))"
                          Placeholder="Name..." Immediate ImmediateDelay="500" Required />
@@ -28,7 +28,11 @@
                          ValueChanged="@(newValue => AttendanceShortNameChanged(context, newValue))"
                          Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required />
     </TemplateColumn>
-    <PropertyColumn Property="@(p => p.IsAbsent)" Title="Abwesend?" Sortable="true" />
+    <TemplateColumn Title="Abwesend?" SortBy="sortByIsAbsent">
+        <FluentCheckbox Value="@(context.IsAbsent ?? false)"
+                        ValueChanged="@(newValue => AttendanceIsAbsentChanged(context, newValue))"
+                        Immediate ImmediateDelay="500" Required />
+    </TemplateColumn>
 </FluentDataGrid>
 
 @code {
@@ -37,6 +41,7 @@
 
     GridSort<AttendanceType> sortByName = GridSort<AttendanceType>.ByAscending(p => p.AttendanceName);
     GridSort<AttendanceType> sortByShortName = GridSort<AttendanceType>.ByAscending(p => p.AttendanceShortName);
+    GridSort<AttendanceType> sortByIsAbsent = GridSort<AttendanceType>.ByAscending(p => p.IsAbsent).ThenAscending(p => p.AttendanceName);
 
     IQueryable<AttendanceType>? FilteredItems => items?.AsQueryable();
 
@@ -71,6 +76,12 @@
     private async Task AttendanceShortNameChanged(AttendanceType item, string newValue)
     {
         item.AttendanceShortName = newValue;
+        await SaveItemAsync(item);
+    }
+
+    private async Task AttendanceIsAbsentChanged(AttendanceType item, bool newValue)
+    {
+        item.IsAbsent = newValue;
         await SaveItemAsync(item);
     }
 
