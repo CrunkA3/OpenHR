@@ -8,4 +8,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
 
     public DbSet<AttendanceType> AttendanceTypes { get; set; } = default!;
+
+    public DbSet<OrganisationUnit> OrganisationUnits { get; set; } = default!;
 }
