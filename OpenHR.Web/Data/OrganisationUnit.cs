@@ -13,4 +13,6 @@ public class OrganisationUnit
 
     [Required, Length(1, 5)]
     public string? OrganisationUnitShortName { get; set; }
+
+    public ICollection<ApplicationUserOrganisationUnit> UserLinks { get; set; } = [];
 }
