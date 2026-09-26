@@ -6,6 +6,7 @@
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore;
+@using OpenHR.Web.Components.DataGrid
 
 @inject ApplicationDbContext DbContext;
 
@@ -23,6 +24,11 @@
                          ValueChanged="@(newValue => AttendanceNameChanged(context, newValue))"
                          Placeholder="Name..." Immediate ImmediateDelay="500" Required />
     </TemplateColumn>
+@*     <TextFieldColumn Title="Name" SortBy="sortByName"
+                     Property="@(p => p.AttendanceName)"
+                     ValueChanged="@(args => AttendanceNameChanged(args.Item, args.NewValue))"
+                     Placeholder="Beschreibung..." Immediate ImmediateDelay="500" Required /> *@
+
     <TemplateColumn Title="Kürzel" SortBy="sortByShortName">
         <FluentTextField Value="@context.AttendanceShortName"
                          ValueChanged="@(newValue => AttendanceShortNameChanged(context, newValue))"
@@ -33,6 +39,8 @@
                         ValueChanged="@(newValue => AttendanceIsAbsentChanged(context, newValue))"
                         Immediate ImmediateDelay="500" Required />
     </TemplateColumn>
+
+    <PropertyColumn Property="@(p => p.IsAbsent)" />
 </FluentDataGrid>
 
 @code {
@@ -67,13 +75,13 @@
         items.Add(new AttendanceType { AttendanceName = "", AttendanceShortName = "", IsAbsent = false });
     }
 
-    private async Task AttendanceNameChanged(AttendanceType item, string newValue)
+    private async Task AttendanceNameChanged(AttendanceType item, string? newValue)
     {
         item.AttendanceName = newValue;
         await SaveItemAsync(item);
     }
 
-    private async Task AttendanceShortNameChanged(AttendanceType item, string newValue)
+    private async Task AttendanceShortNameChanged(AttendanceType item, string? newValue)
     {
         item.AttendanceShortName = newValue;
         await SaveItemAsync(item);

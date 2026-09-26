@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="BlazorCalendar" Version="3.2.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>

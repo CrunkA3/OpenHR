@@ -1,8 +1,10 @@
 ﻿@page "/"
+@using BlazorCalendar
 @attribute [Authorize]
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
 
-Welcome to your new Fluent app.
+<CalendarContainer DisplayedView="DisplayedView.Monthly" >
+	<MonthlyView  />
+</CalendarContainer>
