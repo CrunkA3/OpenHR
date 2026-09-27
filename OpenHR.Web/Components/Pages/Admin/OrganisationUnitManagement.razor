@@ -1,0 +1,105 @@
+﻿@page "/admin/organisation-unit-management"
+
+@attribute [Authorize(Roles = IdentityDatabaseInitializer.AdministratorRole)]
+
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.EntityFrameworkCore;
+@using OpenHR.Web.Components.DataGrid
+
+@inject ApplicationDbContext DbContext;
+
+
+<PageTitle>Organisationseinheiten</PageTitle>
+
+
+<FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+    <FluentLabel Typo="Typography.H3">Organisationseinheiten</FluentLabel>
+    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="AddNewRow">Organisationseinheit anlegen</FluentButton>
+</FluentStack>
+
+@if (FilteredItems is not null)
+{
+    <FluentDataGrid @ref="grid" Items="FilteredItems">
+        <TemplateColumn Title="Name" SortBy="sortByName" IsDefaultSortColumn>
+            <FluentTextField Value="@context.OrganisationUnitName"
+                             ValueChanged="@(newValue => OrganisationUnitNameChanged(context, newValue))"
+                             Placeholder="Name..." Immediate ImmediateDelay="500" Required />
+        </TemplateColumn>
+
+
+        <TemplateColumn Title="Kürzel" SortBy="sortByShortName">
+            <FluentTextField Value="@context.OrganisationUnitShortName"
+                             ValueChanged="@(newValue => OrganisationUnitShortNameChanged(context, newValue))"
+                             Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required />
+        </TemplateColumn>
+    </FluentDataGrid>
+}
+
+
+
+@code {
+    private List<OrganisationUnit>? items;
+    IQueryable<OrganisationUnit>? FilteredItems => items?.AsQueryable();
+
+    FluentDataGrid<OrganisationUnit>? grid;
+
+    GridSort<OrganisationUnit> sortByName = GridSort<OrganisationUnit>.ByAscending(p => p.OrganisationUnitName);
+    GridSort<OrganisationUnit> sortByShortName = GridSort<OrganisationUnit>.ByAscending(p => p.OrganisationUnitShortName);
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItemsAsync();
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        items = (await DbContext.OrganisationUnits.ToListAsync());
+    }
+
+
+
+    private void AddNewRow()
+    {
+        if (items is null)
+        {
+            items = new List<OrganisationUnit>();
+        }
+
+        items.Add(new OrganisationUnit { OrganisationUnitName = "", OrganisationUnitShortName = "" });
+    }
+
+
+
+
+    private async Task OrganisationUnitNameChanged(OrganisationUnit item, string? newValue)
+    {
+        item.OrganisationUnitName = newValue;
+        await SaveItemAsync(item);
+    }
+
+    private async Task OrganisationUnitShortNameChanged(OrganisationUnit item, string? newValue)
+    {
+        item.OrganisationUnitShortName = newValue;
+        await SaveItemAsync(item);
+    }
+
+
+    private async Task SaveItemAsync(OrganisationUnit item)
+    {
+        ICollection<ValidationResult> validationResults = new List<ValidationResult>();
+        var result = Validator.TryValidateObject(item, new ValidationContext(item), validationResults, true);
+
+        if (result)
+        {
+            if (!item.Key.HasValue) DbContext.Add(item);
+
+            var e = DbContext.Entry(item);
+            e.CurrentValues.SetValues(item);
+
+            await DbContext.SaveChangesAsync();
+        }
+    }
+}

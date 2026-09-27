@@ -10,12 +10,14 @@
 
 @inject ApplicationDbContext DbContext;
 
+<PageTitle>Anwesenheitstypen</PageTitle>
+
 
 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
 
-    <FluentLabel Typo="Typography.H3">Abwesenheitstypen</FluentLabel>
+    <FluentLabel Typo="Typography.H3">Anwesenheitstypen</FluentLabel>
 
-    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="AddAttendenceRow">Abwesenheitstyp anlegen</FluentButton>
+    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="AddNewRow">Abwesenheitstyp anlegen</FluentButton>
 </FluentStack>
 
 <FluentDataGrid @ref="grid" Items="FilteredItems">
@@ -39,8 +41,6 @@
                         ValueChanged="@(newValue => AttendanceIsAbsentChanged(context, newValue))"
                         Immediate ImmediateDelay="500" Required />
     </TemplateColumn>
-
-    <PropertyColumn Property="@(p => p.IsAbsent)" />
 </FluentDataGrid>
 
 @code {
@@ -65,7 +65,7 @@
         items = (await DbContext.AttendanceTypes.ToListAsync());
     }
 
-    private void AddAttendenceRow()
+    private void AddNewRow()
     {
         if (items is null)
         {
