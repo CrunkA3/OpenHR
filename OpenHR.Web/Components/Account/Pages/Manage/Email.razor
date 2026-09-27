@@ -31,22 +31,22 @@
         @if (isEmailConfirmed)
         {
             <div>
-                <FluentTextField TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="aktuelle Email" Disabled />
+                <FluentTextInput TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="aktuelle Email" Disabled />
             </div>
         }
         else
         {
             <div>
-                <FluentTextField TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="Email" Disabled />
-                <FluentButton Type="ButtonType.Submit" FormId="send-verification-form" Appearance="Appearance.Accent">Verifizieren</FluentButton>
+                <FluentTextInput TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="Email" Disabled />
+                <FluentButton Type="ButtonType.Submit" FormId="send-verification-form" Appearance="ButtonAppearance.Primary">Verifizieren</FluentButton>
             </div>
         }
         <div class="form-floating mb-3">
-            <FluentTextField TextFieldType="TextFieldType.Email" Name="Input.NewEmail" @bind-Value="Input.NewEmail" Label="Neue Email" AutoComplete="email" />
+            <FluentTextInput TextFieldType="TextFieldType.Email" Name="Input.NewEmail" @bind-Value="Input.NewEmail" Label="Neue Email" AutoComplete="email" />
             <FluentValidationMessage For="() => Input.NewEmail" />
         </div>
 
-        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Email ändern</FluentButton>
+        <FluentButton Type="ButtonType.Submit" Appearance="ButtonAppearance.Primary">Email ändern</FluentButton>
     </FluentStack>
 </EditForm>
 

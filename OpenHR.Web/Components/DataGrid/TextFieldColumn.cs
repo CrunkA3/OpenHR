@@ -70,7 +70,7 @@ public class TextFieldColumn<TGridItem, TProp> : TemplateColumn<TGridItem>
     {
         var value = _getter!(item);
 
-        builder.OpenComponent(0, typeof(FluentTextField));
+        builder.OpenComponent(0, typeof(FluentTextInput));
         builder.AddAttribute(1, "Value", value);
         builder.AddAttribute(2, "ValueChanged",
             EventCallback.Factory.Create<TProp>(this, async v =>

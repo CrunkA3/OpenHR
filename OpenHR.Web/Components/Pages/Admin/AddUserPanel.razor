@@ -1,22 +1,51 @@
 ﻿@using System.ComponentModel.DataAnnotations
 
-@implements IDialogContentComponent<AddUserPanel.CreateUserInput>
+@inherits FluentDialogInstance
+@inject INotificationService NotificationService
 
-<FluentMessageBarProvider Section="@App.MESSAGES_DIALOG" MaxMessageCount="2" />
+<FluentMessageBarProvider Section="@App.MESSAGES_DIALOG" />
 
 
 <FluentDialogBody>
     <div>
-        <FluentTextField Name="Content.Email" @bind-Value="Content.Email" TextFieldType="TextFieldType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
+        <FluentTextInput Name="Content.Email" @bind-Value="Content.Email" TextFieldType="TextFieldType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
     </div>
     <div>
-        <FluentTextField Name="Content.InitialPassword" @bind-Value="Content.InitialPassword" TextFieldType="TextFieldType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
+        <FluentTextInput Name="Content.InitialPassword" @bind-Value="Content.InitialPassword" TextFieldType="TextFieldType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
     </div>
 </FluentDialogBody>
 
 @code {
     [Parameter]
     public CreateUserInput Content { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+
+    protected override async Task OnActionClickedAsync(bool primary)
+    {
+        ICollection<ValidationResult> validationResults = new List<ValidationResult>();
+        var result = Validator.TryValidateObject(Content, new ValidationContext(Content), validationResults, true);
+
+        await NotificationService.CloseAllMessageBarsAsync();
+
+
+        if (!result)
+        {
+            foreach (var validationResult in validationResults)
+            {
+                await NotificationService.ShowErrorBarAsync(App.MESSAGES_DIALOG, "Validierung", validationResult.ErrorMessage ?? "Validation error");
+            }
+
+            return;
+        }
+
+        await DialogInstance.CloseAsync(Content);
+    }
+
 
     public sealed class CreateUserInput
     {
@@ -26,4 +55,6 @@
         [Required, StringLength(100, MinimumLength = 12), DataType(DataType.Password)]
         public string InitialPassword { get; set; } = "";
     }
+
+
 }

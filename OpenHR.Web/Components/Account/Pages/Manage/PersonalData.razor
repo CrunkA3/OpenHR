@@ -17,14 +17,14 @@
 
     <form action="Account/Manage/DownloadPersonalData" method="post">
         <AntiforgeryToken />
-        <FluentButton Appearance="Appearance.Accent" Type="ButtonType.Submit">Herunterladen</FluentButton>
+        <FluentButton Appearance="ButtonAppearance.Primary" Type="ButtonType.Submit">Herunterladen</FluentButton>
     </form>
 
-    <FluentLabel Weight="FontWeight.Bold">Das Löschen dieser Daten entfernt dein Konto dauerhaft und kann nicht rückgängig gemacht werden.</FluentLabel>
-    <FluentAnchor Href="Account/Manage/DeletePersonalData">
+    <FluentLabel Weight="LabelWeight.Semibold">Das Löschen dieser Daten entfernt dein Konto dauerhaft und kann nicht rückgängig gemacht werden.</FluentLabel>
+    <FluentLink Href="Account/Manage/DeletePersonalData">
         <FluentIcon Icon="Icons.Regular.Size16.Delete" Color="Color.Error" Slot="start" />
         Löschen
-    </FluentAnchor>
+    </FluentLink>
 </FluentStack>
 
 

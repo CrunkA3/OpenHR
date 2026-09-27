@@ -14,8 +14,8 @@
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<ProjectReference Include="..\OpenHR.ServiceDefaults\OpenHR.ServiceDefaults.csproj" />
-		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.14.4" />
-		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.14.4" />
+		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0" />
+		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

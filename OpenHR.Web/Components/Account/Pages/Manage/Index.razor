@@ -20,15 +20,15 @@
             <FluentStack Orientation="Orientation.Vertical">
                 <FluentValidationSummary />
                 <div>
-                    <FluentTextField TextFieldType="TextFieldType.Email" Name="username" @bind-Value="username" Placeholder="Email" />
+                    <FluentTextInput TextFieldType="TextFieldType.Email" Name="username" @bind-Value="username" Placeholder="Email" />
                     <FluentValidationMessage For="() => username" />
                 </div>
                 <div>
-                    <FluentTextField TextFieldType="TextFieldType.Tel" Name="Input.PhoneNumber" @bind-Value="Input.PhoneNumber" Placeholder="Telefon" />
+                    <FluentTextInput TextFieldType="TextFieldType.Tel" Name="Input.PhoneNumber" @bind-Value="Input.PhoneNumber" Placeholder="Telefon" />
                     <FluentValidationMessage For="() => Input.PhoneNumber" />
                 </div>
 
-                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Speichern</FluentButton>
+                <FluentButton Type="ButtonType.Submit" Appearance="ButtonAppearance.Primary">Speichern</FluentButton>
             </FluentStack>
         </EditForm>
     </div>

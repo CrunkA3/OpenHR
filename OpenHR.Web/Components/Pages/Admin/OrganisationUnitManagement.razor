@@ -16,21 +16,21 @@
 
 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
     <FluentLabel Typo="Typography.H3">Organisationseinheiten</FluentLabel>
-    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="AddNewRow">Organisationseinheit anlegen</FluentButton>
+    <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="AddNewRow">Organisationseinheit anlegen</FluentButton>
 </FluentStack>
 
 @if (FilteredItems is not null)
 {
     <FluentDataGrid @ref="grid" Items="FilteredItems">
         <TemplateColumn Title="Name" SortBy="sortByName" IsDefaultSortColumn>
-            <FluentTextField Value="@context.OrganisationUnitName"
+            <FluentTextInput Value="@context.OrganisationUnitName"
                              ValueChanged="@(newValue => OrganisationUnitNameChanged(context, newValue))"
                              Placeholder="Name..." Immediate ImmediateDelay="500" Required />
         </TemplateColumn>
 
 
         <TemplateColumn Title="Kürzel" SortBy="sortByShortName">
-            <FluentTextField Value="@context.OrganisationUnitShortName"
+            <FluentTextInput Value="@context.OrganisationUnitShortName"
                              ValueChanged="@(newValue => OrganisationUnitShortNameChanged(context, newValue))"
                              Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required />
         </TemplateColumn>

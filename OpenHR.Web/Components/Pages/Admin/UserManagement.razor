@@ -10,7 +10,6 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IDialogService DialogService
-@inject IMessageService MessageService
 
 
 <PageTitle>Benutzerverwaltung</PageTitle>
@@ -18,15 +17,21 @@
 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
     <FluentLabel Typo="Typography.H1">Benutzerverwaltung</FluentLabel>
 
-    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
+    <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
 
     <FluentAccordion>
         <FluentAccordionItem Expanded="true">
-            <HeadingTemplate>
-                <FluentLabel Typo="Typography.H4"><FluentIcon Icon="Icons.Regular.Size16.Filter" Slot="start" />Filter</FluentLabel>
-            </HeadingTemplate>
+            <HeaderTemplate>
+                <FluentLabel Typo="Typography.H4"><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentLabel>
+            </HeaderTemplate>
             <ChildContent>
-                <FluentSearch Autofocus=true @bind-Value=emailFilter @oninput="HandleEmailFilter" @onkeydown="HandleCloseFilterAsync" @bind-Value:after="HandleClear" Placeholder="test@email.de" Style="width: 100%;" Label="Email" />
+                <FluentTextInput Autofocus=true
+                                 @bind-Value=emailFilter
+                                 @oninput="HandleEmailFilter"
+                                 @bind-Value:after="HandleClear"
+                                 Placeholder="Filter ..."
+                                 Style="width: 100%;"
+                                 Label="Email" />
             </ChildContent>
         </FluentAccordionItem>
     </FluentAccordion>
@@ -35,7 +40,7 @@
         <FluentDataGrid @ref="grid" Items="FilteredItems">
             <PropertyColumn Property="@(p => p.Email)"
                             Sortable="true"
-                            InitialSortDirection="SortDirection.Ascending"
+                            InitialSortDirection="DataGridSortDirection.Ascending"
                             IsDefaultSortColumn="true"
                             Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
             </PropertyColumn>
@@ -46,7 +51,6 @@
 
 @code {
     FluentDataGrid<ApplicationUser>? grid;
-    private IDialogReference? _dialog;
 
     string emailFilter = string.Empty;
 
@@ -96,76 +100,44 @@
         }
     }
 
-    private async Task HandleCloseFilterAsync(KeyboardEventArgs args)
-    {
-        if (args.Key == "Escape")
-        {
-            emailFilter = string.Empty;
-        }
-        if (args.Key == "Enter" && grid is not null)
-        {
-            await grid.CloseColumnOptionsAsync();
-        }
-    }
 
 
 
     private async Task OpenAddUserPanel(MouseEventArgs args)
     {
-        MessageService.Clear();
-
         AddUserPanel.CreateUserInput newUser = new();
 
-
-        _dialog = await DialogService.ShowPanelAsync<AddUserPanel>(newUser, new DialogParameters<AddUserPanel.CreateUserInput>()
+        var result = await DialogService.ShowDrawerAsync<AddUserPanel>(options =>
         {
-            Content = newUser,
-            Alignment = HorizontalAlignment.Right,
-            Title = "Benutzer anlegen",
-            PrimaryAction = "Anlegen",
-            SecondaryAction = "Abbrechen",
-            PreventDismissOnOverlayClick = true,
-            ValidateDialogAsync = async () =>
-            {
-                ICollection<ValidationResult> validationResults = new List<ValidationResult>();
-                var result = Validator.TryValidateObject(newUser, new ValidationContext(newUser), validationResults, true);
-
-                MessageService.Clear();
-                if (!result)
-                {
-                    foreach (var validationResult in validationResults)
-                    {
-                        MessageService.ShowMessageBar(options =>
-                        {
-                            options.Intent = MessageIntent.Error;
-                            options.Title = "Validation error";
-                            options.Body = validationResult.ErrorMessage ?? "Validation error";
-                            options.Timestamp = DateTime.Now;
-                            options.Section = App.MESSAGES_DIALOG;
-                        });
-                    }
-                }
-
-                await Task.Delay(100);
-
-                return result;
-            }
+            options.Data = newUser;
+            options.Parameters.Add(nameof(AddUserPanel.Content), newUser);
+            options.Alignment = DialogAlignment.End;
+            options.Header.Title = "Benutzer anlegen";
+            options.Footer.PrimaryAction.Label = "Anlegen";
+            options.Footer.SecondaryAction.Label = "Abbrechen";
+            options.Modal = true;
         });
 
-        DialogResult result = await _dialog.Result;
+        if (result.Cancelled) return;
+
+        await CreateUserAsync(result.Value as AddUserPanel.CreateUserInput);
+        await LoadUsersAsync();
     }
 
 
-    private async Task CreateUserAsync()
+    private async Task CreateUserAsync(AddUserPanel.CreateUserInput? newUser)
     {
+        if (newUser is null) return;
+
         var user = new ApplicationUser
         {
-            UserName = Input.Email,
-            Email = Input.Email,
+            UserName = newUser.Email,
+            Email = newUser.Email,
             EmailConfirmed = true,
             MustChangePassword = true
         };
-        var result = await UserManager.CreateAsync(user, Input.InitialPassword);
+
+        var result = await UserManager.CreateAsync(user, newUser.InitialPassword);
         if (!result.Succeeded)
         {
             message = string.Join(" ", result.Errors.Select(error => error.Description));

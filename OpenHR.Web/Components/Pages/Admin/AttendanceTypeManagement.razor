@@ -17,12 +17,12 @@
 
     <FluentLabel Typo="Typography.H3">Anwesenheitstypen</FluentLabel>
 
-    <FluentButton Type="ButtonType.Button" Appearance="Appearance.Accent" OnClick="AddNewRow">Abwesenheitstyp anlegen</FluentButton>
+    <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="AddNewRow">Abwesenheitstyp anlegen</FluentButton>
 </FluentStack>
 
 <FluentDataGrid @ref="grid" Items="FilteredItems">
     <TemplateColumn Title="Name" SortBy="sortByName" IsDefaultSortColumn>
-        <FluentTextField Value="@context.AttendanceName"
+        <FluentTextInput Value="@context.AttendanceName"
                          ValueChanged="@(newValue => AttendanceNameChanged(context, newValue))"
                          Placeholder="Name..." Immediate ImmediateDelay="500" Required />
     </TemplateColumn>
@@ -32,7 +32,7 @@
                      Placeholder="Beschreibung..." Immediate ImmediateDelay="500" Required /> *@
 
     <TemplateColumn Title="Kürzel" SortBy="sortByShortName">
-        <FluentTextField Value="@context.AttendanceShortName"
+        <FluentTextInput Value="@context.AttendanceShortName"
                          ValueChanged="@(newValue => AttendanceShortNameChanged(context, newValue))"
                          Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required />
     </TemplateColumn>
