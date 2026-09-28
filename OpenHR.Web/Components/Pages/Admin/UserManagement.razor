@@ -14,40 +14,36 @@
 
 <PageTitle>Benutzerverwaltung</PageTitle>
 
-<FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
-    <FluentText As="TextTag.H1">Benutzerverwaltung</FluentText>
+<FluentText As="TextTag.H1">Benutzerverwaltung</FluentText>
 
-    <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
+<FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
 
-    <FluentAccordion>
-        <FluentAccordionItem Expanded="true">
-            <HeaderTemplate>
-                <FluentText><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentText>
-            </HeaderTemplate>
-            <ChildContent>
-                <FluentTextInput Autofocus=true
-                                 @bind-Value=emailFilter
-                                 @oninput="HandleEmailFilter"
-                                 @bind-Value:after="HandleClear"
-                                 Placeholder="Filter ..."
-                                 Style="width: 100%;"
-                                 Label="Email" />
-            </ChildContent>
-        </FluentAccordionItem>
-    </FluentAccordion>
+<FluentAccordion>
+    <FluentAccordionItem Expanded="true">
+        <HeaderTemplate>
+            <FluentText><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentText>
+        </HeaderTemplate>
+        <ChildContent>
+            <FluentTextInput Autofocus=true
+                             @bind-Value=emailFilter
+                             @oninput="HandleEmailFilter"
+                             @bind-Value:after="HandleClear"
+                             Placeholder="Filter ..."
+                             Style="width: 100%;"
+                             Label="Email" />
+        </ChildContent>
+    </FluentAccordionItem>
+</FluentAccordion>
 
-    <FluentCard>
-        <FluentDataGrid @ref="grid" Items="FilteredItems">
-            <PropertyColumn Property="@(p => p.Email)"
-                            Sortable="true"
-                            InitialSortDirection="DataGridSortDirection.Ascending"
-                            IsDefaultSortColumn="true"
-                            Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
-            </PropertyColumn>
-            <PropertyColumn Property="@(p => p.MustChangePassword)" Title="Muss Passwort ändern" Sortable="true" />
-        </FluentDataGrid>
-    </FluentCard>
-</FluentStack>
+<FluentDataGrid @ref="grid" Items="FilteredItems">
+    <PropertyColumn Property="@(p => p.Email)"
+                    Sortable="true"
+                    InitialSortDirection="DataGridSortDirection.Ascending"
+                    IsDefaultSortColumn="true"
+                    Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
+    </PropertyColumn>
+    <PropertyColumn Property="@(p => p.MustChangePassword)" Title="Muss Passwort ändern" Sortable="true" />
+</FluentDataGrid>
 
 @code {
     FluentDataGrid<ApplicationUser>? grid;
