@@ -10,6 +10,7 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IDialogService DialogService
+@inject ApplicationDbContext DbContext
 
 
 <PageTitle>Benutzerverwaltung</PageTitle>
@@ -30,19 +31,30 @@
                              @bind-Value:after="HandleClear"
                              Placeholder="Filter ..."
                              Style="width: 100%;"
-                             Label="Email" />
+                             Label="Email" AutoComplete="off" />
         </ChildContent>
     </FluentAccordionItem>
 </FluentAccordion>
 
-<FluentDataGrid @ref="grid" Items="FilteredItems">
+<FluentDataGrid @ref="grid" Items="FilteredItems" RowSize="DataGridRowSize.Medium" GridTemplateColumns="3fr 3fr 1fr">
     <PropertyColumn Property="@(p => p.Email)"
                     Sortable="true"
                     InitialSortDirection="DataGridSortDirection.Ascending"
                     IsDefaultSortColumn="true"
                     Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
     </PropertyColumn>
-    <PropertyColumn Property="@(p => p.MustChangePassword)" Title="Muss Passwort ändern" Sortable="true" />
+    <TemplateColumn Title="Organisationseinheiten">
+        <FluentAutocomplete Items="organisationUnits" TOption="OrganisationUnit" TValue="Guid?"
+                            OptionText="@(ou => ou.OrganisationUnitName)"
+                            OptionValue="@(ou => ou.Key)"
+                            SelectedItemsChanged="@(items => HandleSelectedItemsChanged(context, items))"
+                            SelectedItems="@(context.OrganisationUnitLinks.Select(ou => ou.OrganisationUnit))"
+                            Placeholder="Organisationseinheiten auswählen..."
+                            Width="100%" />
+    </TemplateColumn>
+    <TemplateColumn Title="Muss Passwort ändern">
+        <FluentCheckbox Value="context.MustChangePassword" ReadOnly="true" />
+    </TemplateColumn>
 </FluentDataGrid>
 
 @code {
@@ -51,6 +63,8 @@
     string emailFilter = string.Empty;
 
     private IQueryable<ApplicationUser>? users;
+    private IQueryable<OrganisationUnit>? organisationUnits;
+
     private string? message;
 
 
@@ -76,6 +90,7 @@
     {
         Input ??= new();
         await LoadUsersAsync();
+        await LoadOrganisationUnitsAsync();
     }
 
 
@@ -147,6 +162,45 @@
 
     private async Task LoadUsersAsync()
     {
-        users = (await UserManager.Users.OrderBy(user => user.Email).ToListAsync()).AsQueryable();
+        users = (await UserManager.Users
+            .OrderBy(user => user.Email)
+            .Include(user => user.OrganisationUnitLinks)
+            .ThenInclude(link => link.OrganisationUnit)
+            .ToListAsync()).AsQueryable();
+    }
+
+    private async Task LoadOrganisationUnitsAsync()
+    {
+        organisationUnits = (await DbContext.OrganisationUnits.OrderBy(ou => ou.OrganisationUnitName).ToListAsync()).AsQueryable();
+    }
+
+
+    /// <summary>
+    /// Saves the selected organisation units for the given user.
+    /// It compares the current mappings in the database with the newly selected items
+    /// and updates the database accordingly by removing any mappings
+    /// that are no longer selected
+    /// and adding new mappings for any newly selected organisation units.
+    /// </summary>
+    /// <param name="user">The user for whom the organisation units are being updated.</param>
+    /// <param name="selectedItems">The newly selected organisation units.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task HandleSelectedItemsChanged(ApplicationUser user, IEnumerable<OrganisationUnit> selectedItems)
+    {
+        var currentMappings = await DbContext.ApplicationUserOrganisationUnits.Where(map => map.ApplicationUserId == user.Id).ToListAsync();
+        var newKeys = selectedItems.Select(ou => ou.Key).ToArray();
+
+        var deleteMappings = currentMappings.Where(map => !newKeys.Contains(map.OrganisationUnitKey)).ToList();
+        var newMappings = newKeys.Where(ou => ou != null && !currentMappings.Any(map => map.OrganisationUnitKey == ou)).Select(ou => new ApplicationUserOrganisationUnit
+        {
+            ApplicationUserId = user.Id,
+            OrganisationUnitKey = ou!.Value
+        }).ToList();
+
+        DbContext.ApplicationUserOrganisationUnits.RemoveRange(deleteMappings);
+        DbContext.ApplicationUserOrganisationUnits.AddRange(newMappings);
+        await DbContext.SaveChangesAsync();
     }
 }
+
+    
