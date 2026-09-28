@@ -15,14 +15,14 @@
 <PageTitle>Benutzerverwaltung</PageTitle>
 
 <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
-    <FluentLabel Typo="Typography.H1">Benutzerverwaltung</FluentLabel>
+    <FluentText As="TextTag.H1">Benutzerverwaltung</FluentText>
 
     <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
 
     <FluentAccordion>
         <FluentAccordionItem Expanded="true">
             <HeaderTemplate>
-                <FluentLabel Typo="Typography.H4"><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentLabel>
+                <FluentText><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentText>
             </HeaderTemplate>
             <ChildContent>
                 <FluentTextInput Autofocus=true
