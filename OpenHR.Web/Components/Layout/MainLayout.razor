@@ -5,23 +5,19 @@
         OpenHR
     </FluentLayoutItem>
     <FluentLayoutItem Area="@LayoutArea.Navigation">
-        <NavMenu />
+        <NavMenu @rendermode="InteractiveServer" />
     </FluentLayoutItem>
 
     <FluentLayoutItem Area="@LayoutArea.Content">
-            <div class="content">
-                @Body
-            </div>
+        <div class="content">
+            @Body
+        </div>
 
     </FluentLayoutItem>
 
-    <FluentProviders>
-            <FluentToastProvider />
-            <FluentDialogProvider @rendermode="InteractiveServer" />
-            <FluentTooltipProvider />
-    </FluentProviders>
+    <FluentProviders @rendermode="InteractiveServer" />
 
-@*     <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
+    @*     <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
         <FluentBodyContent Class="body-content">
         </FluentBodyContent>
     </FluentStack> *@
