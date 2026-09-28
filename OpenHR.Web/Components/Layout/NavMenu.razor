@@ -2,7 +2,7 @@
 
 @inject NavigationManager NavigationManager
 
-<FluentNav Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
+<FluentNav Id="main-menu" Width="250">
     <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Home())">Home</FluentNavItem>
     <FluentNavItem Href="counter" IconRest="@(new Icons.Regular.Size20.NumberSymbolSquare())">Counter</FluentNavItem>
     <FluentNavItem Href="weather" IconRest="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())">Weather</FluentNavItem>
@@ -38,8 +38,6 @@
 
 @code {
     private string? currentUrl;
-
-    private bool expanded = true;
 
     protected override void OnInitialized()
     {
