@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OpenHR.Web.Data;
@@ -18,4 +19,7 @@ public sealed class AttendanceType
 
     [Required]
     public bool? IsAbsent { get; set; }
+
+    [Required, DefaultValue(false)]
+    public bool? HasQuota { get; set; }
 }

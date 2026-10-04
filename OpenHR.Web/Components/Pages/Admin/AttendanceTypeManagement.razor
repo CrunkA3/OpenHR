@@ -41,7 +41,12 @@
     <TemplateColumn Title="Abwesend?" SortBy="sortByIsAbsent">
         <FluentCheckbox Value="@(context.IsAbsent ?? false)"
                         ValueChanged="@(newValue => AttendanceIsAbsentChanged(context, newValue))"
-                        Immediate ImmediateDelay="500" Required />
+                        Required />
+    </TemplateColumn>
+    <TemplateColumn Title="Hat Kontingent?" SortBy="sortByHasQuota">
+        <FluentCheckbox Value="@(context.HasQuota ?? false)"
+                        ValueChanged="@(newValue => AttendanceHasQuotaChanged(context, newValue))"
+                        Required />
     </TemplateColumn>
 </FluentDataGrid>
 
@@ -52,6 +57,7 @@
     GridSort<AttendanceType> sortByName = GridSort<AttendanceType>.ByAscending(p => p.AttendanceName);
     GridSort<AttendanceType> sortByShortName = GridSort<AttendanceType>.ByAscending(p => p.AttendanceShortName);
     GridSort<AttendanceType> sortByIsAbsent = GridSort<AttendanceType>.ByAscending(p => p.IsAbsent).ThenAscending(p => p.AttendanceName);
+    GridSort<AttendanceType> sortByHasQuota = GridSort<AttendanceType>.ByAscending(p => p.HasQuota).ThenAscending(p => p.AttendanceName);
 
     IQueryable<AttendanceType>? FilteredItems => items?.AsQueryable();
 
@@ -74,7 +80,7 @@
             items = new List<AttendanceType>();
         }
 
-        items.Add(new AttendanceType { AttendanceName = "", AttendanceShortName = "", IsAbsent = false });
+        items.Add(new AttendanceType { AttendanceName = "", AttendanceShortName = "", IsAbsent = false, HasQuota = false });
     }
 
     private async Task AttendanceNameChanged(AttendanceType item, string? newValue)
@@ -92,6 +98,12 @@
     private async Task AttendanceIsAbsentChanged(AttendanceType item, bool newValue)
     {
         item.IsAbsent = newValue;
+        await SaveItemAsync(item);
+    }
+
+    private async Task AttendanceHasQuotaChanged(AttendanceType item, bool newValue)
+    {
+        item.HasQuota = newValue;
         await SaveItemAsync(item);
     }
 
