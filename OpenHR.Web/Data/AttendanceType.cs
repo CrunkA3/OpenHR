@@ -22,4 +22,7 @@ public sealed class AttendanceType
 
     [Required, DefaultValue(false)]
     public bool? HasQuota { get; set; }
+
+    public ICollection<ApplicationUserAttendanceQuota> UserQuotaLinks { get; set; } = [];
+
 }

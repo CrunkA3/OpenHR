@@ -7,6 +7,7 @@
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
+@using OpenHR.Web.Components.Shared
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IDialogService DialogService
@@ -25,8 +26,7 @@
             <FluentText><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentText>
         </HeaderTemplate>
         <ChildContent>
-            <FluentTextInput Autofocus=true
-                             @bind-Value=emailFilter
+            <FluentTextInput @bind-Value=emailFilter
                              @oninput="HandleEmailFilter"
                              @bind-Value:after="HandleClear"
                              Placeholder="Filter ..."
@@ -52,6 +52,18 @@
                             Placeholder="Organisationseinheiten auswählen..."
                             Width="100%" />
     </TemplateColumn>
+    @if (attendanceTypes is not null && attendanceQuotas is not null)
+    {
+        foreach (var attendanceType in attendanceTypes)
+        {
+            <TemplateColumn Title="@attendanceType.AttendanceName">
+                <FeedbackNumberInput Value="@GetAttendanceQuota(context, attendanceType)" TValue="int?"
+                                     ValueChanged="@(newValue => HandleAttendanceQuotaChanged(context, attendanceType, newValue))"
+                                     Placeholder="Kontingent..."
+                                     Width="100%" />
+            </TemplateColumn>
+        }
+    }
     <TemplateColumn Title="Muss Passwort ändern">
         <FluentCheckbox Value="context.MustChangePassword" ReadOnly="true" />
     </TemplateColumn>
@@ -64,6 +76,8 @@
 
     private IQueryable<ApplicationUser>? users;
     private IQueryable<OrganisationUnit>? organisationUnits;
+    private IQueryable<AttendanceType>? attendanceTypes;
+    private List<ApplicationUserAttendanceQuota>? attendanceQuotas;
 
     private string? message;
 
@@ -91,8 +105,9 @@
         Input ??= new();
         await LoadUsersAsync();
         await LoadOrganisationUnitsAsync();
+        await LoadAttendanceTypesAsync();
+        await LoadAttendanceQuotasAsync();
     }
-
 
 
     private void HandleEmailFilter(ChangeEventArgs args)
@@ -160,6 +175,14 @@
         await LoadUsersAsync();
     }
 
+
+    private int? GetAttendanceQuota(ApplicationUser user, AttendanceType attendanceType)
+    {
+        return attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == user.Id && q.AttendanceTypeKey == attendanceType.Key)?.Quota;
+    }
+
+
+
     private async Task LoadUsersAsync()
     {
         users = (await UserManager.Users
@@ -173,6 +196,22 @@
     {
         organisationUnits = (await DbContext.OrganisationUnits.OrderBy(ou => ou.OrganisationUnitName).ToListAsync()).AsQueryable();
     }
+
+    private async Task LoadAttendanceTypesAsync()
+    {
+        attendanceTypes = (
+            await DbContext.AttendanceTypes
+            .Where(at => at.HasQuota!.Value)
+            .OrderBy(at => at.AttendanceName)
+            .ToListAsync()
+        ).AsQueryable();
+    }
+
+    private async Task LoadAttendanceQuotasAsync() => attendanceQuotas = await DbContext.ApplicationUserAttendanceQuotas.ToListAsync();
+
+
+
+
 
 
     /// <summary>
@@ -200,6 +239,49 @@
         DbContext.ApplicationUserOrganisationUnits.RemoveRange(deleteMappings);
         DbContext.ApplicationUserOrganisationUnits.AddRange(newMappings);
         await DbContext.SaveChangesAsync();
+    }
+
+
+    /// <summary>
+    /// Handles the change in attendance quota for a specific user and attendance type.
+    /// </summary>
+    /// <param name="user">The user for whom the attendance quota is being updated.</param>
+    /// <param name="attendanceType">The attendance type for which the quota is being updated.</param>
+    /// <param name="newQuota">The new quota value.</param>
+    /// <param name="refOverlay">The reference to the FluentOverlay component.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task HandleAttendanceQuotaChanged(ApplicationUser user, AttendanceType attendanceType, int? newQuota)
+    {
+        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == user.Id && q.AttendanceTypeKey == attendanceType.Key) is { } existingQuota)
+        {
+            if (newQuota.HasValue)
+            {
+                // Update existing entry
+                existingQuota.Quota = newQuota.Value;
+                DbContext.ApplicationUserAttendanceQuotas.Update(existingQuota);
+                await DbContext.SaveChangesAsync();
+                return;
+            }
+
+            // Remove existing entry
+            DbContext.ApplicationUserAttendanceQuotas.Remove(existingQuota);
+            await DbContext.SaveChangesAsync();
+            return;
+        }
+
+
+        // creaate new entry
+        var newQuotaEntry = new ApplicationUserAttendanceQuota
+        {
+            ApplicationUserId = user.Id,
+            AttendanceTypeKey = attendanceType.Key!.Value,
+            Quota = newQuota ?? 0
+        };
+        DbContext.ApplicationUserAttendanceQuotas.Add(newQuotaEntry);
+        attendanceQuotas?.Add(newQuotaEntry);
+        await DbContext.SaveChangesAsync();
+
+
     }
 }
 

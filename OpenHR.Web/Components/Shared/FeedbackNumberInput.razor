@@ -1,0 +1,49 @@
+﻿@typeparam TValue
+
+<FluentNumberInput Value="Value" TValue="TValue"
+                   ValueChanged="HandleValueChanged"
+                   Placeholder="@Placeholder"
+                   Immediate="true" ImmediateDelay="500"
+                   Width="@Width">
+    <EndTemplate>
+        @if (endIcon is not null)
+        {
+            <FluentIcon Value="endIcon" />
+        }
+    </EndTemplate>
+</FluentNumberInput>
+
+
+
+@code {
+    private Icon? endIcon = null;
+
+    private readonly Icon processingIcon = new Icons.Filled.Size20.SpinnerIos().WithColor(Color.Primary);
+    private readonly Icon successIcon = new Icons.Filled.Size20.Checkmark().WithColor(Color.Success);
+
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public string? Width { get; set; }
+
+
+
+    private async Task HandleValueChanged(TValue newValue)
+    {
+        Value = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+
+        endIcon = successIcon;
+        StateHasChanged();
+
+        await Task.Delay(3000);
+        endIcon = null;
+    }
+}
