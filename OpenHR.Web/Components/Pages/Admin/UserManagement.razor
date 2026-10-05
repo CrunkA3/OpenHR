@@ -16,27 +16,33 @@
 
 <PageTitle>Benutzerverwaltung</PageTitle>
 
-<FluentText As="TextTag.H1">Benutzerverwaltung</FluentText>
-
-<FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
-
-<FluentAccordion>
-    <FluentAccordionItem Expanded="true">
-        <HeaderTemplate>
-            <FluentText><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentText>
-        </HeaderTemplate>
-        <ChildContent>
-            <FluentTextInput @bind-Value=emailFilter
-                             @oninput="HandleEmailFilter"
-                             @bind-Value:after="HandleClear"
-                             Placeholder="Filter ..."
-                             Style="width: 100%;"
-                             Label="Email" AutoComplete="off" />
-        </ChildContent>
-    </FluentAccordionItem>
-</FluentAccordion>
+<FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+    <FluentText As="TextTag.H1">Benutzerverwaltung</FluentText>
+    <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" OnClick="OpenAddUserPanel">Benutzer anlegen</FluentButton>
+</FluentStack>
 
 <FluentGrid Spacing="3">
+
+    <FluentGridItem Xs="12">
+        <FluentCard>
+            <FluentAccordion>
+                <FluentAccordionItem Expanded="true">
+                    <HeaderTemplate>
+                        <FluentText><FluentIcon Value="@(new Icons.Regular.Size16.Filter())" Slot="start" />Filter</FluentText>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <FluentTextInput @bind-Value=emailFilter
+                                         @oninput="HandleEmailFilter"
+                                         @bind-Value:after="HandleClear"
+                                         Placeholder="Filter ..."
+                                         Style="width: 100%;"
+                                         Label="Email" AutoComplete="off" />
+                    </ChildContent>
+                </FluentAccordionItem>
+            </FluentAccordion>
+        </FluentCard>
+    </FluentGridItem>
+
     @if (users is null)
     {
         <FluentSkeleton Circular="false" Shimmer="true" Width="100%" Height="200px">
@@ -198,4 +204,4 @@
     private async Task LoadAttendanceQuotasAsync() => attendanceQuotas = await DbContext.ApplicationUserAttendanceQuotas.ToListAsync();
 
 
-}    
+}
