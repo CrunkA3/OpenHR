@@ -69,19 +69,23 @@
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task HandleSelectedItemsChanged(IEnumerable<OrganisationUnit> selectedItems)
     {
+        var selectedOrganisationUnits = selectedItems.ToList();
         var currentMappings = await DbContext.ApplicationUserOrganisationUnits.Where(map => map.ApplicationUserId == User.Id).ToListAsync();
-        var newKeys = selectedItems.Select(ou => ou.Key).ToArray();
+        var newKeys = selectedOrganisationUnits.Select(ou => ou.Key).ToArray();
 
         var deleteMappings = currentMappings.Where(map => !newKeys.Contains(map.OrganisationUnitKey)).ToList();
         var newMappings = newKeys.Where(ou => ou != null && !currentMappings.Any(map => map.OrganisationUnitKey == ou)).Select(ou => new ApplicationUserOrganisationUnit
         {
             ApplicationUserId = User.Id,
-            OrganisationUnitKey = ou!.Value
+            OrganisationUnitKey = ou!.Value,
+            ApplicationUser = User,
+            OrganisationUnit = selectedOrganisationUnits.First(unit => unit.Key == ou)
         }).ToList();
 
         DbContext.ApplicationUserOrganisationUnits.RemoveRange(deleteMappings);
         DbContext.ApplicationUserOrganisationUnits.AddRange(newMappings);
         await DbContext.SaveChangesAsync();
+        User.OrganisationUnitLinks = currentMappings.Except(deleteMappings).Concat(newMappings).ToList();
     }
 
 
