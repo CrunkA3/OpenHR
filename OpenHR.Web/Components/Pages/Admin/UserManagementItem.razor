@@ -1,0 +1,136 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using OpenHR.Web.Components.Shared
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IDialogService DialogService
+@inject ApplicationDbContext DbContext
+
+<FluentCard OnClick="HandleClick">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="3">
+        <FluentText Size="TextSize.Size400">@User.Email</FluentText>
+        <FluentDivider Appearance="DividerAppearance.Brand" />
+        <FluentAutocomplete Label="Organisationseinheit" Items="organisationUnits" TOption="OrganisationUnit" TValue="Guid?"
+                            OptionText="@(ou => ou.OrganisationUnitName)"
+                            OptionValue="@(ou => ou.Key)"
+                            SelectedItemsChanged="@(items => HandleSelectedItemsChanged(items))"
+                            SelectedItems="@(User.OrganisationUnitLinks.Select(ou => ou.OrganisationUnit))"
+                            Placeholder="Organisationseinheiten auswählen..."
+                            Width="100%" />
+
+        @if (attendanceTypes is not null && attendanceQuotas is not null)
+        {
+            foreach (var attendanceType in attendanceTypes)
+            {
+                <FeedbackNumberInput Label="@attendanceType.AttendanceName"
+                                     Value="@GetAttendanceQuota(attendanceType)" TValue="int?"
+                                     ValueChanged="@(newValue => HandleAttendanceQuotaChanged( attendanceType, newValue))"
+                                     Placeholder="Kontingent..."
+                                     Width="100%" />
+            }
+        }
+    </FluentStack>
+</FluentCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public ApplicationUser User { get; set; } = default!;
+
+    [CascadingParameter]
+    private List<OrganisationUnit> organisationUnits { get; set; } = default!;
+
+    [CascadingParameter]
+    private List<AttendanceType> attendanceTypes { get; set; } = default!;
+
+    [CascadingParameter]
+    private List<ApplicationUserAttendanceQuota> attendanceQuotas { get; set; } = default!;
+
+
+    private int? GetAttendanceQuota(AttendanceType attendanceType)
+    {
+        return attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == User.Id && q.AttendanceTypeKey == attendanceType.Key)?.Quota;
+    }
+
+
+
+
+    private void HandleClick()
+    {
+        // Handle the click event here
+    }
+
+    /// <summary>
+    /// Saves the selected organisation units for the given user.
+    /// It compares the current mappings in the database with the newly selected items
+    /// and updates the database accordingly by removing any mappings
+    /// that are no longer selected
+    /// and adding new mappings for any newly selected organisation units.
+    /// </summary>
+    /// <param name="selectedItems">The newly selected organisation units.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task HandleSelectedItemsChanged(IEnumerable<OrganisationUnit> selectedItems)
+    {
+        var selectedOrganisationUnits = selectedItems.ToList();
+        var currentMappings = await DbContext.ApplicationUserOrganisationUnits.Where(map => map.ApplicationUserId == User.Id).ToListAsync();
+        var newKeys = selectedOrganisationUnits.Select(ou => ou.Key).ToArray();
+
+        var deleteMappings = currentMappings.Where(map => !newKeys.Contains(map.OrganisationUnitKey)).ToList();
+        var newMappings = newKeys.Where(ou => ou != null && !currentMappings.Any(map => map.OrganisationUnitKey == ou)).Select(ou => new ApplicationUserOrganisationUnit
+        {
+            ApplicationUserId = User.Id,
+            OrganisationUnitKey = ou!.Value,
+            ApplicationUser = User,
+            OrganisationUnit = selectedOrganisationUnits.First(unit => unit.Key == ou)
+        }).ToList();
+
+        DbContext.ApplicationUserOrganisationUnits.RemoveRange(deleteMappings);
+        DbContext.ApplicationUserOrganisationUnits.AddRange(newMappings);
+        await DbContext.SaveChangesAsync();
+        User.OrganisationUnitLinks = currentMappings.Except(deleteMappings).Concat(newMappings).ToList();
+    }
+
+
+
+    /// <summary>
+    /// Handles the change in attendance quota for a specific user and attendance type.
+    /// </summary>
+    /// <param name="attendanceType">The attendance type for which the quota is being updated.</param>
+    /// <param name="newQuota">The new quota value.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    private async Task HandleAttendanceQuotaChanged(AttendanceType attendanceType, int? newQuota)
+    {
+        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == User.Id && q.AttendanceTypeKey == attendanceType.Key) is { } existingQuota)
+        {
+            if (newQuota.HasValue)
+            {
+                // Update existing entry
+                existingQuota.Quota = newQuota.Value;
+                DbContext.ApplicationUserAttendanceQuotas.Update(existingQuota);
+                await DbContext.SaveChangesAsync();
+                return;
+            }
+
+            // Remove existing entry
+            DbContext.ApplicationUserAttendanceQuotas.Remove(existingQuota);
+            await DbContext.SaveChangesAsync();
+            return;
+        }
+
+if (!newQuota.HasValue)
+{
+    return;
+}
+
+// Create a new entry
+var newQuotaEntry = new ApplicationUserAttendanceQuota
+{
+    ApplicationUserId = User.Id,
+    AttendanceTypeKey = attendanceType.Key!.Value,
+    Quota = newQuota.Value
+};
+        DbContext.ApplicationUserAttendanceQuotas.Add(newQuotaEntry);
+        attendanceQuotas?.Add(newQuotaEntry);
+        await DbContext.SaveChangesAsync();
+
+
+    }
+}
