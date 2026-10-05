@@ -36,38 +36,29 @@
     </FluentAccordionItem>
 </FluentAccordion>
 
-<FluentDataGrid @ref="grid" Items="FilteredItems" RowSize="DataGridRowSize.Medium" GridTemplateColumns="3fr 3fr 1fr">
-    <PropertyColumn Property="@(p => p.Email)"
-                    Sortable="true"
-                    InitialSortDirection="DataGridSortDirection.Ascending"
-                    IsDefaultSortColumn="true"
-                    Filtered="!string.IsNullOrWhiteSpace(emailFilter)">
-    </PropertyColumn>
-    <TemplateColumn Title="Organisationseinheiten">
-        <FluentAutocomplete Items="organisationUnits" TOption="OrganisationUnit" TValue="Guid?"
-                            OptionText="@(ou => ou.OrganisationUnitName)"
-                            OptionValue="@(ou => ou.Key)"
-                            SelectedItemsChanged="@(items => HandleSelectedItemsChanged(context, items))"
-                            SelectedItems="@(context.OrganisationUnitLinks.Select(ou => ou.OrganisationUnit))"
-                            Placeholder="Organisationseinheiten auswählen..."
-                            Width="100%" />
-    </TemplateColumn>
-    @if (attendanceTypes is not null && attendanceQuotas is not null)
+<FluentGrid Spacing="3">
+    @if (users is null)
     {
-        foreach (var attendanceType in attendanceTypes)
-        {
-            <TemplateColumn Title="@attendanceType.AttendanceName">
-                <FeedbackNumberInput Value="@GetAttendanceQuota(context, attendanceType)" TValue="int?"
-                                     ValueChanged="@(newValue => HandleAttendanceQuotaChanged(context, attendanceType, newValue))"
-                                     Placeholder="Kontingent..."
-                                     Width="100%" />
-            </TemplateColumn>
-        }
+        <FluentSkeleton Circular="false" Shimmer="true" Width="100%" Height="200px">
+        </FluentSkeleton>
     }
-    <TemplateColumn Title="Muss Passwort ändern">
-        <FluentCheckbox Value="context.MustChangePassword" ReadOnly="true" />
-    </TemplateColumn>
-</FluentDataGrid>
+    else
+    {
+        <CascadingValue Value="organisationUnits">
+            <CascadingValue Value="attendanceTypes">
+                <CascadingValue Value="attendanceQuotas">
+                    @foreach (var user in FilteredItems ?? Enumerable.Empty<ApplicationUser>())
+                    {
+                        <FluentGridItem>
+                            <UserManagementItem User="user" />
+                        </FluentGridItem>
+                    }
+                </CascadingValue>
+            </CascadingValue>
+        </CascadingValue>
+    }
+</FluentGrid>
+
 
 @code {
     FluentDataGrid<ApplicationUser>? grid;
@@ -75,8 +66,8 @@
     string emailFilter = string.Empty;
 
     private IQueryable<ApplicationUser>? users;
-    private IQueryable<OrganisationUnit>? organisationUnits;
-    private IQueryable<AttendanceType>? attendanceTypes;
+    private List<OrganisationUnit>? organisationUnits;
+    private List<AttendanceType>? attendanceTypes;
     private List<ApplicationUserAttendanceQuota>? attendanceQuotas;
 
     private string? message;
@@ -192,10 +183,7 @@
             .ToListAsync()).AsQueryable();
     }
 
-    private async Task LoadOrganisationUnitsAsync()
-    {
-        organisationUnits = (await DbContext.OrganisationUnits.OrderBy(ou => ou.OrganisationUnitName).ToListAsync()).AsQueryable();
-    }
+    private async Task LoadOrganisationUnitsAsync() => organisationUnits = (await DbContext.OrganisationUnits.OrderBy(ou => ou.OrganisationUnitName).ToListAsync());
 
     private async Task LoadAttendanceTypesAsync()
     {
@@ -204,85 +192,10 @@
             .Where(at => at.HasQuota!.Value)
             .OrderBy(at => at.AttendanceName)
             .ToListAsync()
-        ).AsQueryable();
+        );
     }
 
     private async Task LoadAttendanceQuotasAsync() => attendanceQuotas = await DbContext.ApplicationUserAttendanceQuotas.ToListAsync();
 
 
-
-
-
-
-    /// <summary>
-    /// Saves the selected organisation units for the given user.
-    /// It compares the current mappings in the database with the newly selected items
-    /// and updates the database accordingly by removing any mappings
-    /// that are no longer selected
-    /// and adding new mappings for any newly selected organisation units.
-    /// </summary>
-    /// <param name="user">The user for whom the organisation units are being updated.</param>
-    /// <param name="selectedItems">The newly selected organisation units.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    private async Task HandleSelectedItemsChanged(ApplicationUser user, IEnumerable<OrganisationUnit> selectedItems)
-    {
-        var currentMappings = await DbContext.ApplicationUserOrganisationUnits.Where(map => map.ApplicationUserId == user.Id).ToListAsync();
-        var newKeys = selectedItems.Select(ou => ou.Key).ToArray();
-
-        var deleteMappings = currentMappings.Where(map => !newKeys.Contains(map.OrganisationUnitKey)).ToList();
-        var newMappings = newKeys.Where(ou => ou != null && !currentMappings.Any(map => map.OrganisationUnitKey == ou)).Select(ou => new ApplicationUserOrganisationUnit
-        {
-            ApplicationUserId = user.Id,
-            OrganisationUnitKey = ou!.Value
-        }).ToList();
-
-        DbContext.ApplicationUserOrganisationUnits.RemoveRange(deleteMappings);
-        DbContext.ApplicationUserOrganisationUnits.AddRange(newMappings);
-        await DbContext.SaveChangesAsync();
-    }
-
-
-    /// <summary>
-    /// Handles the change in attendance quota for a specific user and attendance type.
-    /// </summary>
-    /// <param name="user">The user for whom the attendance quota is being updated.</param>
-    /// <param name="attendanceType">The attendance type for which the quota is being updated.</param>
-    /// <param name="newQuota">The new quota value.</param>
-    /// <param name="refOverlay">The reference to the FluentOverlay component.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    private async Task HandleAttendanceQuotaChanged(ApplicationUser user, AttendanceType attendanceType, int? newQuota)
-    {
-        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == user.Id && q.AttendanceTypeKey == attendanceType.Key) is { } existingQuota)
-        {
-            if (newQuota.HasValue)
-            {
-                // Update existing entry
-                existingQuota.Quota = newQuota.Value;
-                DbContext.ApplicationUserAttendanceQuotas.Update(existingQuota);
-                await DbContext.SaveChangesAsync();
-                return;
-            }
-
-            // Remove existing entry
-            DbContext.ApplicationUserAttendanceQuotas.Remove(existingQuota);
-            await DbContext.SaveChangesAsync();
-            return;
-        }
-
-
-        // creaate new entry
-        var newQuotaEntry = new ApplicationUserAttendanceQuota
-        {
-            ApplicationUserId = user.Id,
-            AttendanceTypeKey = attendanceType.Key!.Value,
-            Quota = newQuota ?? 0
-        };
-        DbContext.ApplicationUserAttendanceQuotas.Add(newQuotaEntry);
-        attendanceQuotas?.Add(newQuotaEntry);
-        await DbContext.SaveChangesAsync();
-
-
-    }
-}
-
-    
+}    

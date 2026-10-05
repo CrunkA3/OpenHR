@@ -1,6 +1,6 @@
 ﻿@typeparam TValue
 
-<FluentNumberInput Value="Value" TValue="TValue"
+<FluentNumberInput Label="@Label" Value="Value" TValue="TValue"
                    ValueChanged="HandleValueChanged"
                    Placeholder="@Placeholder"
                    Immediate="true" ImmediateDelay="500"
@@ -20,6 +20,9 @@
 
     private readonly Icon processingIcon = new Icons.Filled.Size20.SpinnerIos().WithColor(Color.Primary);
     private readonly Icon successIcon = new Icons.Filled.Size20.Checkmark().WithColor(Color.Success);
+
+    [Parameter]
+    public string? Label { get; set; }
 
     [Parameter]
     public TValue? Value { get; set; }
