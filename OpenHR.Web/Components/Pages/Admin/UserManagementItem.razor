@@ -111,14 +111,18 @@
             return;
         }
 
+if (!newQuota.HasValue)
+{
+    return;
+}
 
-        // creaate new entry
-        var newQuotaEntry = new ApplicationUserAttendanceQuota
-        {
-            ApplicationUserId = User.Id,
-            AttendanceTypeKey = attendanceType.Key!.Value,
-            Quota = newQuota ?? 0
-        };
+// Create a new entry
+var newQuotaEntry = new ApplicationUserAttendanceQuota
+{
+    ApplicationUserId = User.Id,
+    AttendanceTypeKey = attendanceType.Key!.Value,
+    Quota = newQuota.Value
+};
         DbContext.ApplicationUserAttendanceQuotas.Add(newQuotaEntry);
         attendanceQuotas?.Add(newQuotaEntry);
         await DbContext.SaveChangesAsync();
