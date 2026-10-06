@@ -1,0 +1,6 @@
+/* CSS for CalendarWeek component */
+.week {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}

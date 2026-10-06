@@ -1,0 +1,13 @@
+﻿@using System.Globalization
+@using Microsoft.FluentUI.AspNetCore.Components.Extensions
+
+<div class="month-header">
+    @for (int i = 0; i < 7; i++)
+    {
+        <div class="month-header-day">@Monday.AddDays(i).ToString("ddd", CultureInfo.CurrentCulture)</div>
+    }
+</div>
+
+@code {
+    private static readonly DateTime Monday = DateTime.Today.StartOfWeek();
+}

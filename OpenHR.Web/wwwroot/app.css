@@ -1,5 +1,12 @@
 @import '_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css';
 
+:root {
+    --content-padding-top: 0.5rem;
+    --content-padding-right: 1.5rem;
+    --content-padding-bottom: 0.5rem;
+    --content-padding-left: 1.5rem;
+}
+
 body {
     --body-font: "Segoe UI Variable", "Segoe UI", sans-serif;
     font-family: var(--body-font);
@@ -25,7 +32,7 @@ body {
 }
 
 .content {
-    padding: 0.5rem 1.5rem;
+    padding: var(--content-padding-top) var(--content-padding-left) var(--content-padding-bottom) var(--content-padding-right);
     align-self: stretch !important;
     width: 100%;
 }

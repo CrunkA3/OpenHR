@@ -4,8 +4,6 @@
 
 <FluentNav Id="main-menu" Width="250">
     <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Home())">Home</FluentNavItem>
-    <FluentNavItem Href="counter" IconRest="@(new Icons.Regular.Size20.NumberSymbolSquare())">Counter</FluentNavItem>
-    <FluentNavItem Href="weather" IconRest="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())">Weather</FluentNavItem>
     <AuthorizeView Roles="Administrator">
         <Authorized>
             <FluentNavCategory Title="Admin" IconRest="@(new Icons.Regular.Size20.ShieldSettings())" IconActive="@(new Icons.Regular.Size20.ShieldSettings())">

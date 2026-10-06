@@ -1,0 +1,22 @@
+﻿@using System.Globalization
+@using Microsoft.FluentUI.AspNetCore.Components.Extensions
+
+
+<div class="calendar">
+    <FluentText As="TextTag.H1" Style="flex: 0.1;">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
+
+    <CalendarMonthHeader />
+
+    @for (int i = 0; i < viewWeekCount; i++)
+    {
+        <CalendarWeek StartDate="@viewStartDate.AddDays(i * 7)" />
+    }
+</div>
+
+@code {
+    private DateTime viewDate = DateTime.Today;
+    private DateTime viewMonth => viewDate.StartOfMonth(CultureInfo.CurrentCulture);
+    private DateTime viewStartDate => viewMonth.StartOfWeek(CultureInfo.CurrentCulture);
+    private DateTime viewEndDate => viewMonth.AddMonths(1).AddDays(-1).StartOfWeek(CultureInfo.CurrentCulture);
+    private int viewWeekCount => (int)(viewEndDate - viewStartDate).TotalDays / 7 + 1;
+}

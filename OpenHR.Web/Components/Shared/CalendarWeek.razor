@@ -1,0 +1,11 @@
+﻿<div class="week">
+    @for (int i = 0; i < 7; i++)
+    {
+        <CalendarWeekDay Date="@StartDate.AddDays(i)" />
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public DateTime StartDate { get; set; }
+}

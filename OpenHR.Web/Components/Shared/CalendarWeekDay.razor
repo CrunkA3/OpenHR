@@ -1,0 +1,9 @@
+﻿@using System.Globalization
+
+<div class="day">@Date.ToString("dd", CultureInfo.CurrentCulture)</div>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public DateTime Date { get; set; }
+}

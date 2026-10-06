@@ -1,10 +1,18 @@
 ﻿@page "/"
+
+@using System.Globalization
 @using BlazorCalendar
+@using Microsoft.FluentUI.AspNetCore.Components.Extensions
+@using OpenHR.Web.Components.Shared
+
 @attribute [Authorize]
 
-<PageTitle>Home</PageTitle>
+<PageTitle>OpenHR</PageTitle>
+
+<Calendar />
 
 
-<CalendarContainer DisplayedView="DisplayedView.Monthly" >
-	<MonthlyView  />
-</CalendarContainer>
+@code {
+
+
+}

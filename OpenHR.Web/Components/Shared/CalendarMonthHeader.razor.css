@@ -1,0 +1,14 @@
+/* CSS for CalendarMonthHeader component */
+.month-header {
+    flex: 0.1;
+    min-height: 0;
+    display: flex;
+}
+
+/* CSS for CalendarWeekDay component */
+.month-header-day {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #ddd;
+    overflow: auto;
+}

@@ -1,0 +1,7 @@
+/* CSS for Calendar component */
+.calendar {
+    width: 100%;
+    height: calc(var(--layout-body-height) - var(--content-padding-top) - var(--content-padding-bottom));
+    display: flex;
+    flex-direction: column;
+}
