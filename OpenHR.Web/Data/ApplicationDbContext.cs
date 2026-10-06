@@ -32,7 +32,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(x => x.OrganisationUnitKey);
 
         builder.Entity<ApplicationUserAttendanceQuota>()
-            .HasKey(x => new { x.ApplicationUserId, x.AttendanceTypeKey });
+            .HasKey(x => new { x.ApplicationUserId, x.AttendanceTypeKey, x.ValidFromYear });
 
         builder.Entity<ApplicationUserAttendanceQuota>()
             .HasOne(x => x.ApplicationUser)

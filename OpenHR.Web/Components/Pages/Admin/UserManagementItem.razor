@@ -98,7 +98,9 @@
     /// <returns>A task that represents the asynchronous operation.</returns>
     private async Task HandleAttendanceQuotaChanged(AttendanceType attendanceType, int? newQuota)
     {
-        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == User.Id && q.AttendanceTypeKey == attendanceType.Key) is { } existingQuota)
+        var currentYear = DateTime.Now.Year;
+
+        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == User.Id && q.AttendanceTypeKey == attendanceType.Key && q.ValidFromYear == currentYear) is { } existingQuota)
         {
             if (newQuota.HasValue)
             {
@@ -115,18 +117,19 @@
             return;
         }
 
-if (!newQuota.HasValue)
-{
-    return;
-}
+        if (!newQuota.HasValue)
+        {
+            return;
+        }
 
-// Create a new entry
-var newQuotaEntry = new ApplicationUserAttendanceQuota
-{
-    ApplicationUserId = User.Id,
-    AttendanceTypeKey = attendanceType.Key!.Value,
-    Quota = newQuota.Value
-};
+        // Create a new entry
+        var newQuotaEntry = new ApplicationUserAttendanceQuota
+        {
+            ApplicationUserId = User.Id,
+            AttendanceTypeKey = attendanceType.Key!.Value,
+            ValidFromYear = currentYear,
+            Quota = newQuota.Value
+        };
         DbContext.ApplicationUserAttendanceQuotas.Add(newQuotaEntry);
         attendanceQuotas?.Add(newQuotaEntry);
         await DbContext.SaveChangesAsync();

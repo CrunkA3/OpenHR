@@ -1,4 +1,6 @@
-﻿namespace OpenHR.Web.Data
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace OpenHR.Web.Data
 {
     public class ApplicationUserAttendanceQuota
     {
@@ -6,7 +8,14 @@
 
         public Guid AttendanceTypeKey { get; set; }
 
+        [Required]
         public int Quota { get; set; }
+
+
+        [Required]
+        public int ValidFromYear { get; set; }
+
+
 
         public ApplicationUser ApplicationUser { get; set; } = default!;
 

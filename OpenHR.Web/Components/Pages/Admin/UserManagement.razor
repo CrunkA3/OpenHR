@@ -201,7 +201,15 @@
         );
     }
 
-    private async Task LoadAttendanceQuotasAsync() => attendanceQuotas = await DbContext.ApplicationUserAttendanceQuotas.ToListAsync();
+    private async Task LoadAttendanceQuotasAsync()
+    {
+        attendanceQuotas = (await DbContext.ApplicationUserAttendanceQuotas
+            .Where(q => q.ValidFromYear <= DateTime.Now.Year)
+            .OrderByDescending(q => q.ValidFromYear)
+            .ToListAsync())
+            .DistinctBy(q => new { q.ApplicationUserId, q.AttendanceTypeKey })
+            .ToList();
+    }
 
 
 }
