@@ -1,7 +1,6 @@
 /* CSS for CalendarMonthHeader component */
 .month-header {
     flex: 0.1;
-    min-height: 0;
     display: flex;
 }
 
@@ -9,6 +8,22 @@
 .month-header-day {
     flex: 1;
     min-width: 0;
-    border: 1px solid #ddd;
-    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--calendar-day-border-radius);
+    margin: var(--calendar-day-margin);
+    padding: var(--calendar-day-margin);
+    box-sizing: border-box;
+    overflow: clip;
+    box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground) 37%, transparent) inset;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    text-align: center;
+    font-weight: 800;
+    color: var(--colorBrandForeground1)
 }
+
+
+    .month-header-day.Sunday {
+        --colorBrandBackground: var(--colorPaletteRedBorder1);
+        --colorBrandForeground1: var(--colorPaletteRedForeground1);
+    }

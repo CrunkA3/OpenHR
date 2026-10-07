@@ -1,11 +1,16 @@
 ﻿<div class="week">
     @for (int i = 0; i < 7; i++)
     {
-        <CalendarWeekDay Date="@StartDate.AddDays(i)" />
+        var currentDate = StartDate.AddDays(i);
+
+        <CalendarWeekDay Date="currentDate" IsOtherMonth="!currentDate.Month.Equals(ViewMonth.Month)" />
     }
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public DateTime StartDate { get; set; }
+
+    [Parameter, EditorRequired]
+    public DateTime ViewMonth { get; set; }
 }

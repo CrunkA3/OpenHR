@@ -4,7 +4,8 @@
 <div class="month-header">
     @for (int i = 0; i < 7; i++)
     {
-        <div class="month-header-day">@Monday.AddDays(i).ToString("ddd", CultureInfo.CurrentCulture)</div>
+        var currentDate = Monday.AddDays(i);
+        <div class="month-header-day @currentDate.ToString("dddd", CultureInfo.InvariantCulture)">@currentDate.ToString("ddd", CultureInfo.CurrentCulture)</div>
     }
 </div>
 

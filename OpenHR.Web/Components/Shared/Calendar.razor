@@ -9,7 +9,7 @@
 
     @for (int i = 0; i < viewWeekCount; i++)
     {
-        <CalendarWeek StartDate="@viewStartDate.AddDays(i * 7)" />
+        <CalendarWeek StartDate="@viewStartDate.AddDays(i * 7)" ViewMonth="viewMonth" />
     }
 </div>
 

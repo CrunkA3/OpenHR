@@ -2,6 +2,24 @@
 .day {
     flex: 1;
     min-width: 0;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--calendar-day-border-radius);
+    margin: var(--calendar-day-margin);
+    padding-right: calc(var(--calendar-day-border-radius)/2);
     overflow: auto;
+    box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground) 37%, transparent) inset;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    text-align: right;
+    font-weight: 800;
+    color: var(--colorBrandForeground1);
 }
+
+    .day.other-month {
+        box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground2) 37%, transparent);
+    }
+
+    .day.Sunday {
+        --colorBrandBackground: var(--colorPaletteRedBorder1);
+        --colorBrandForeground1: var(--colorPaletteRedForeground1);
+    }
