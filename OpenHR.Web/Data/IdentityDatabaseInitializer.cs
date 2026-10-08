@@ -13,7 +13,6 @@ public static class IdentityDatabaseInitializer
         await using var scope = services.CreateAsyncScope();
         var serviceProvider = scope.ServiceProvider;
         var database = serviceProvider.GetRequiredService<ApplicationDbContext>();
-        await database.Database.EnsureCreatedAsync();
         await database.Database.MigrateAsync();
 
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
