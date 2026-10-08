@@ -4,10 +4,7 @@
 
 @rendermode InteractiveServer
 
-
-@using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore
-@using OpenHR.Web.Components.Shared
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IDialogService DialogService
@@ -67,8 +64,6 @@
 
 
 @code {
-    FluentDataGrid<ApplicationUser>? grid;
-
     string emailFilter = string.Empty;
 
     private IQueryable<ApplicationUser>? users;

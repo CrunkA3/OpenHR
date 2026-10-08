@@ -6,7 +6,6 @@
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.EntityFrameworkCore;
-@using OpenHR.Web.Components.DataGrid
 
 @inject ApplicationDbContext DbContext;
 
@@ -52,7 +51,6 @@
 
 @code {
     private List<AttendanceType>? items;
-    private string? message;
 
     GridSort<AttendanceType> sortByName = GridSort<AttendanceType>.ByAscending(p => p.AttendanceName);
     GridSort<AttendanceType> sortByShortName = GridSort<AttendanceType>.ByAscending(p => p.AttendanceShortName);
