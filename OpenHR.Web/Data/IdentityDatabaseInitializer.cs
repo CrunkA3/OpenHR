@@ -6,6 +6,7 @@ namespace OpenHR.Web.Data;
 public static class IdentityDatabaseInitializer
 {
     public const string AdministratorRole = "Administrator";
+    public const string CoordinatorRole = "Coordinator";
 
     public static async Task InitializeIdentityAsync(this IServiceProvider services)
     {
@@ -25,6 +26,21 @@ public static class IdentityDatabaseInitializer
             }
         }
 
+        if (!await roleManager.RoleExistsAsync(CoordinatorRole))
+        {
+            var result = await roleManager.CreateAsync(new IdentityRole(CoordinatorRole));
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"The coordinator role could not be created: {string.Join(", ", result.Errors.Select(error => error.Description))}");
+            }
+        }
+
+        await CreateAdminIfNoUserExists(serviceProvider);
+    }
+
+    private static async Task CreateAdminIfNoUserExists(IServiceProvider serviceProvider)
+    {
+        // Create the first administrator user if no users exist
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         if (await userManager.Users.AnyAsync())
         {

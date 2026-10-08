@@ -1,12 +1,60 @@
 ﻿@using System.Globalization
+@using OpenHR.Web.Components.Pages
 
-<div class="day @(IsOtherMonth ? "other-month" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)">@Date.ToString("dd", CultureInfo.CurrentCulture)</div>
+@inject IDialogService DialogService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="day @(IsOtherMonth ? "other-month" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)" @onclick="HandleDayClickAsync">
+    @Date.ToString("dd", CultureInfo.CurrentCulture)
+</div>
+
+
 
 @code {
+    private string? currentUserId;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    [CascadingParameter]
+    private List<AttendanceType>? attendanceTypes { get; set; }
 
     [Parameter, EditorRequired]
     public DateTime Date { get; set; }
 
     [Parameter]
     public bool IsOtherMonth { get; set; } = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask!;
+        currentUserId = UserManager.GetUserId(authState.User);
+    }
+
+
+    private async Task HandleDayClickAsync(MouseEventArgs e)
+    {
+        if (currentUserId is null) return;
+
+        var result = await DialogService.ShowDialogAsync<NewAttendanceDialog>(options =>
+                {
+                    options.Modal = false;
+                    options.Size = DialogSize.Large;
+                    options.Alignment = DialogAlignment.Default;
+
+                    options.Parameters.Add(nameof(NewAttendanceDialog.Attendance), new Attendance { Date = Date, ApplicationUserId = currentUserId });
+                    options.Parameters.Add(nameof(NewAttendanceDialog.AttendanceTypes), attendanceTypes);
+                });
+
+        if (result.Cancelled)
+        {
+            Console.WriteLine($"Dialog Canceled: {result.Value}");
+        }
+        else
+        {
+            Console.WriteLine($"Dialog Saved: {result.Value}");
+        }
+    }
 }

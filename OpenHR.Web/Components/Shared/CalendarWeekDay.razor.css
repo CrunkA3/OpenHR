@@ -15,6 +15,10 @@
     color: var(--colorBrandForeground1);
 }
 
+    .day:hover {
+        background-color: var(--colorNeutralBackground1Hover);
+    }
+
     .day.other-month {
         box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground2) 37%, transparent);
     }

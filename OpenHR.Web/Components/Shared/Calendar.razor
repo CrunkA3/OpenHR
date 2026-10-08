@@ -1,16 +1,21 @@
 ﻿@using System.Globalization
 @using Microsoft.FluentUI.AspNetCore.Components.Extensions
+@using Microsoft.EntityFrameworkCore;
+
+@inject ApplicationDbContext DbContext
 
 
 <div class="calendar">
-    <FluentText As="TextTag.H1" Style="flex: 0.1;">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
+    <CascadingValue Value="attendanceTypes">
+        <FluentText As="TextTag.H1" Style="flex: 0.1;">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
 
-    <CalendarMonthHeader />
+        <CalendarMonthHeader />
 
-    @for (int i = 0; i < viewWeekCount; i++)
-    {
-        <CalendarWeek StartDate="@viewStartDate.AddDays(i * 7)" ViewMonth="viewMonth" />
-    }
+        @for (int i = 0; i < viewWeekCount; i++)
+        {
+            <CalendarWeek StartDate="@viewStartDate.AddDays(i * 7)" ViewMonth="viewMonth" />
+        }
+    </CascadingValue>
 </div>
 
 @code {
@@ -19,4 +24,25 @@
     private DateTime viewStartDate => viewMonth.StartOfWeek(CultureInfo.CurrentCulture);
     private DateTime viewEndDate => viewMonth.AddMonths(1).AddDays(-1).StartOfWeek(CultureInfo.CurrentCulture);
     private int viewWeekCount => (int)(viewEndDate - viewStartDate).TotalDays / 7 + 1;
+
+
+    private List<AttendanceType>? attendanceTypes { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAttendanceTypesAsync();
+    }
+
+
+
+    private async Task LoadAttendanceTypesAsync()
+    {
+        attendanceTypes = (
+            await DbContext.AttendanceTypes
+            .OrderBy(at => at.AttendanceName)
+            .ToListAsync()
+        );
+    }
+
 }

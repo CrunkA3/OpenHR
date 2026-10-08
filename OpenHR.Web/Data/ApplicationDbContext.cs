@@ -14,6 +14,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<ApplicationUserAttendanceQuota> ApplicationUserAttendanceQuotas { get; set; } = default!;
 
+    public DbSet<Attendance> Attendances { get; set; } = default!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -25,6 +27,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasOne(x => x.ApplicationUser)
             .WithMany(x => x.OrganisationUnitLinks)
             .HasForeignKey(x => x.ApplicationUserId);
+
+        builder.Entity<Attendance>()
+            .HasIndex(x => new { x.ApplicationUserId, x.AttendanceTypeKey, x.Date })
+            .IsUnique();
+
+        builder.Entity<Attendance>()
+            .HasOne(x => x.ApplicationUser)
+            .WithMany(x => x.AttendanceLinks)
+            .HasForeignKey(x => x.ApplicationUserId);
+
+        builder.Entity<Attendance>()
+            .HasOne(x => x.AttendanceType)
+            .WithMany()
+            .HasForeignKey(x => x.AttendanceTypeKey);
 
         builder.Entity<ApplicationUserOrganisationUnit>()
             .HasOne(x => x.OrganisationUnit)

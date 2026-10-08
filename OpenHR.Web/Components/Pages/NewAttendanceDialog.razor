@@ -1,0 +1,41 @@
+﻿<FluentDialogBody>
+
+    <FluentStack Orientation="Orientation.Vertical">
+        @if (Attendance is not null)
+        {
+            <FluentDatePicker @bind-Value="Attendance.Date" Label="Datum" Required="true" />
+            <FluentSelect @bind-Value="Attendance.AttendanceTypeKey"
+                          Items="AttendanceTypes"
+                          TValue="Guid" TOption="AttendanceType"
+                          OptionText="@(item => item.AttendanceName)"
+                          OptionValue="@(item => item.Key!.Value)"
+                          Label="Anwesenheitstyp"
+                          Required="true" />
+        }
+    </FluentStack>
+</FluentDialogBody>
+
+
+
+@code {
+    [Parameter]
+    public Attendance? Attendance { get; set; } = default!;
+
+    [Parameter]
+    public List<AttendanceType>? AttendanceTypes { get; set; }
+
+    private async Task HandleValidSubmit()
+    {
+        // Handle the form submission logic here
+        // For example, you can save the Attendance object to the database
+        await SaveAttendanceAsync(Attendance);
+    }
+
+    private async Task SaveAttendanceAsync(Attendance attendance)
+    {
+        // Implement your logic to save the attendance record to the database
+        // For example:
+        // await DbContext.Attendances.AddAsync(attendance);
+        // await DbContext.SaveChangesAsync();
+    }
+}

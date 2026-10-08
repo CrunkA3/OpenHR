@@ -8,4 +8,5 @@ public class ApplicationUser : IdentityUser
 
     public ICollection<ApplicationUserOrganisationUnit> OrganisationUnitLinks { get; set; } = [];
     public ICollection<ApplicationUserAttendanceQuota> AttendanceQuotaLinks { get; set; } = [];
+    public ICollection<Attendance> AttendanceLinks { get; set; } = [];
 }
