@@ -1,0 +1,54 @@
+# Start: cp .env.example .env  (Werte anpassen)  &&  docker compose up -d --build
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?SQL_SA_PASSWORD fehlt}
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  cache:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  apiservice:
+    build:
+      context: .
+      dockerfile: OpenHR.ApiService/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+
+  web:
+    build:
+      context: .
+      dockerfile: OpenHR.Web/Dockerfile
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      apiservice:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=OpenHR;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
+      ConnectionStrings__cache: "cache:6379"
+      services__apiservice__http__0: "http://apiservice:8080"
+      BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:?BOOTSTRAP_ADMIN_EMAIL fehlt}
+      BootstrapAdmin__InitialPassword: ${BOOTSTRAP_ADMIN_PASSWORD:?BOOTSTRAP_ADMIN_PASSWORD fehlt}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+
+volumes:
+  sqldata:
