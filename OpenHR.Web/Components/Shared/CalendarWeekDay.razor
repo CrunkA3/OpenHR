@@ -21,7 +21,7 @@
     private List<AttendanceType>? attendanceTypes { get; set; }
 
     [Parameter, EditorRequired]
-    public DateTime Date { get; set; }
+    public DateOnly Date { get; set; }
 
     [Parameter]
     public bool IsOtherMonth { get; set; } = false;

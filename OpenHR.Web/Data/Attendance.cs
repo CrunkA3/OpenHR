@@ -16,7 +16,7 @@ public class Attendance
     public Guid AttendanceTypeKey { get; set; }
 
     [Required]
-    public DateTime Date { get; set; }
+    public DateOnly Date { get; set; }
 
     [Required, DefaultValue(1)]
     public decimal Amount { get; set; } = 1;

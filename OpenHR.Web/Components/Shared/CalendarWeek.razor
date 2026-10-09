@@ -11,10 +11,10 @@
 
 @code {
     [Parameter, EditorRequired]
-    public DateTime StartDate { get; set; }
+    public DateOnly StartDate { get; set; }
 
     [Parameter, EditorRequired]
-    public DateTime ViewMonth { get; set; }
+    public DateOnly ViewMonth { get; set; }
 
 
     [CascadingParameter]
