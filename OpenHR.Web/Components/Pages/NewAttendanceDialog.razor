@@ -31,8 +31,10 @@
         await SaveAttendanceAsync(Attendance);
     }
 
-    private async Task SaveAttendanceAsync(Attendance attendance)
+    private async Task SaveAttendanceAsync(Attendance? attendance)
     {
+        if (attendance is null) return;
+
         // Implement your logic to save the attendance record to the database
         // For example:
         // await DbContext.Attendances.AddAsync(attendance);

@@ -23,29 +23,29 @@
     <TemplateColumn Title="Name" SortBy="sortByName" IsDefaultSortColumn>
         <FluentTextInput Value="@context.AttendanceName"
                          ValueChanged="@(newValue => AttendanceNameChanged(context, newValue))"
-                         Placeholder="Name..." Immediate ImmediateDelay="500" Required
+                         Placeholder="Name..." Immediate ImmediateDelay="500" Required="true"
                          Width="100%" />
     </TemplateColumn>
     @*<TextFieldColumn Title="Name" SortBy="sortByName"
                      Property="@(p => p.AttendanceName)"
                      ValueChanged="@(args => AttendanceNameChanged(args.Item, args.NewValue))"
-                     Placeholder="Beschreibung..." Immediate ImmediateDelay="500" Required /> *@
+                     Placeholder="Beschreibung..." Immediate ImmediateDelay="500" Required="true" /> *@
 
     <TemplateColumn Title="Kürzel" SortBy="sortByShortName">
         <FluentTextInput Value="@context.AttendanceShortName"
                          ValueChanged="@(newValue => AttendanceShortNameChanged(context, newValue))"
-                         Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required
+                         Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required="true"
                          Width="100%" />
     </TemplateColumn>
     <TemplateColumn Title="Abwesend?" SortBy="sortByIsAbsent">
         <FluentCheckbox Value="@(context.IsAbsent ?? false)"
                         ValueChanged="@(newValue => AttendanceIsAbsentChanged(context, newValue))"
-                        Required />
+                        Required="true" />
     </TemplateColumn>
     <TemplateColumn Title="Hat Kontingent?" SortBy="sortByHasQuota">
         <FluentCheckbox Value="@(context.HasQuota ?? false)"
                         ValueChanged="@(newValue => AttendanceHasQuotaChanged(context, newValue))"
-                        Required />
+                        Required="true" />
     </TemplateColumn>
 </FluentDataGrid>
 

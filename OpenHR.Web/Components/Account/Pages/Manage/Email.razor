@@ -31,13 +31,13 @@
         @if (isEmailConfirmed)
         {
             <div>
-                <FluentTextInput TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="aktuelle Email" Disabled />
+                <FluentTextInput TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="aktuelle Email" Disabled="true" />
             </div>
         }
         else
         {
             <div>
-                <FluentTextInput TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="Email" Disabled />
+                <FluentTextInput TextFieldType="TextFieldType.Email" Name="email" @bind-Value="email" Label="Email" Disabled="true" />
                 <FluentButton Type="ButtonType.Submit" FormId="send-verification-form" Appearance="ButtonAppearance.Primary">Verifizieren</FluentButton>
             </div>
         }
