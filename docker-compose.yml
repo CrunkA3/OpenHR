@@ -44,11 +44,11 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=OpenHR;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
       ConnectionStrings__cache: "cache:6379"
-      services__apiservice__http__0: "http://apiservice:8080"
+      services__apiservice__http__0: "http://localhost:8080"
       BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:?BOOTSTRAP_ADMIN_EMAIL fehlt}
       BootstrapAdmin__InitialPassword: ${BOOTSTRAP_ADMIN_PASSWORD:?BOOTSTRAP_ADMIN_PASSWORD fehlt}
     ports:
-      - "${WEB_PORT:-8080}:8080"
+      - "${WEB_PORT:-8090}:8090"
 
 volumes:
   sqldata:
