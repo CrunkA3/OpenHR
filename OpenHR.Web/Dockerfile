@@ -1,12 +1,13 @@
-# Build-Kontext: Repository-Root (siehe docker-compose.yml)
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY OpenHR.Web/OpenHR.Web.csproj OpenHR.Web/
-COPY OpenHR.ServiceDefaults/OpenHR.ServiceDefaults.csproj OpenHR.ServiceDefaults/
+
+COPY . .
 RUN dotnet restore OpenHR.Web/OpenHR.Web.csproj
-COPY OpenHR.Web/ OpenHR.Web/
-COPY OpenHR.ServiceDefaults/ OpenHR.ServiceDefaults/
-RUN dotnet publish OpenHR.Web/OpenHR.Web.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish OpenHR.Web/OpenHR.Web.csproj \
+    -c Release \
+    -o /app/publish \
+    --no-restore \
+    /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
