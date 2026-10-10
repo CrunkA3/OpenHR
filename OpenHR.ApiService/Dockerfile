@@ -10,8 +10,8 @@ RUN dotnet publish OpenHR.ApiService/OpenHR.ApiService.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:7492
+EXPOSE 7492
 COPY --from=build /app/publish .
 USER $APP_UID
 ENTRYPOINT ["dotnet", "OpenHR.ApiService.dll"]
