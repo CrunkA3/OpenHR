@@ -24,11 +24,26 @@
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" />
                 <div>
-                    <FluentTextInput Name="Input.Email" Label="Email" TextFieldType="TextFieldType.Email" @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username webauthn" placeholder="name@example.com" Required />
+                    <FluentTextInput Name="Input.Email"
+                                     Label="Email"
+                                     TextInputType="TextInputType.Email"
+                                     @bind-Value="Input.Email"
+                                     id="Input.Email"
+                                     autocomplete="username webauthn"
+                                     placeholder="name@example.com"
+                                     Required="true" />
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
-                    <FluentTextInput Name="Input.Password" Label="Passwort" TextFieldType="TextFieldType.Password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <FluentTextInput Name="Input.Password"
+                                     Label="Passwort"
+                                     TextInputType="TextInputType.Password"
+                                     @bind-Value="Input.Password"
+                                     id="Input.Password"
+                                     class="form-control"
+                                     autocomplete="current-password"
+                                     Required="true"
+                                     placeholder="Passwort" />
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
                 <div class="checkbox mb-3">

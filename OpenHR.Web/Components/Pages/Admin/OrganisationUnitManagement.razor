@@ -25,7 +25,7 @@
         <TemplateColumn Title="Name" SortBy="sortByName" IsDefaultSortColumn>
             <FluentTextInput Value="@context.OrganisationUnitName"
                              ValueChanged="@(newValue => OrganisationUnitNameChanged(context, newValue))"
-                             Placeholder="Name..." Immediate ImmediateDelay="500" Required
+                             Placeholder="Name..." Immediate ImmediateDelay="500" Required="true"
                              Width="100%" />
         </TemplateColumn>
 
@@ -33,7 +33,7 @@
         <TemplateColumn Title="Kürzel" SortBy="sortByShortName">
             <FluentTextInput Value="@context.OrganisationUnitShortName"
                              ValueChanged="@(newValue => OrganisationUnitShortNameChanged(context, newValue))"
-                             Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required
+                             Placeholder="Kürzel..." Immediate ImmediateDelay="500" Required="true"
                              Width="100%" />
         </TemplateColumn>
     </FluentDataGrid>
