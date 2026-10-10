@@ -3,30 +3,35 @@
 @inherits FluentDialogInstance
 @inject INotificationService NotificationService
 
+
 <FluentMessageBarProvider Section="@App.MESSAGES_DIALOG" />
 
-
 <FluentDialogBody>
-    <div>
+    <FluentStack>
         <FluentTextInput Name="Content.Email" @bind-Value="Content.Email" TextFieldType="TextFieldType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
-    </div>
-    <div>
         <FluentTextInput Name="Content.InitialPassword" @bind-Value="Content.InitialPassword" TextFieldType="TextFieldType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
-    </div>
+    </FluentStack>
 </FluentDialogBody>
 
 @code {
     [Parameter]
     public CreateUserInput Content { get; set; } = default!;
 
-    protected override async Task OnInitializedAsync()
+    // Initialize the dialog
+    protected override void OnInitializeDialog(DialogOptionsHeader header, DialogOptionsFooter footer)
     {
-
+        header.Title = "Benutzer anlegen";
+        footer.SecondaryAction.Visible = true;
     }
-
 
     protected override async Task OnActionClickedAsync(bool primary)
     {
+        if (!primary)
+        {
+            await DialogInstance.CancelAsync();
+            return;
+        }
+
         ICollection<ValidationResult> validationResults = new List<ValidationResult>();
         var result = Validator.TryValidateObject(Content, new ValidationContext(Content), validationResults, true);
 

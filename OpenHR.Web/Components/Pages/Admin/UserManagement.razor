@@ -127,12 +127,10 @@
 
         var result = await DialogService.ShowDrawerAsync<AddUserPanel>(options =>
         {
-            options.Data = newUser;
             options.Parameters.Add(nameof(AddUserPanel.Content), newUser);
             options.Alignment = DialogAlignment.End;
-            options.Header.Title = "Benutzer anlegen";
-            options.Footer.PrimaryAction.Label = "Anlegen";
-            options.Footer.SecondaryAction.Label = "Abbrechen";
+            // options.Footer.PrimaryAction.Label = "Anlegen";
+            // options.Footer.SecondaryAction.Label = "Abbrechen";
             options.Modal = true;
         });
 
