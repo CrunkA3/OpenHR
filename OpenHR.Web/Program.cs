@@ -82,14 +82,14 @@ app.UseAuthorization();
 app.Use(async (context, next) =>
 {
     if (context.User.Identity?.IsAuthenticated == true
-        && !context.Request.Path.StartsWithSegments("/account/ChangePassword")
-        && !context.Request.Path.StartsWithSegments("/Account/Logout"))
+        && !context.Request.Path.StartsWithSegments("/account/changepassword")
+        && !context.Request.Path.StartsWithSegments("/account/logout"))
     {
         var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.GetUserAsync(context.User);
         if (user?.MustChangePassword == true)
         {
-            context.Response.Redirect("/account/ChangePassword");
+            context.Response.Redirect("/account/changepassword");
             return;
         }
     }

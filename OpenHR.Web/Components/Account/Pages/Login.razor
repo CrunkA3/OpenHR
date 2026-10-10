@@ -1,4 +1,4 @@
-﻿@page "/Account/Login"
+﻿@page "/account/login"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
@@ -10,6 +10,8 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+
+@attribute [AllowAnonymous]
 
 <PageTitle>Log in</PageTitle>
 
@@ -23,27 +25,14 @@
                 <h2>Use a local account to log in.</h2>
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" />
-                <div>
-                    <FluentTextInput Name="Input.Email"
-                                     Label="Email"
-                                     TextInputType="TextInputType.Email"
-                                     @bind-Value="Input.Email"
-                                     id="Input.Email"
-                                     autocomplete="username webauthn"
-                                     placeholder="name@example.com"
-                                     Required="true" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <label for="Input.Email">Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
                 <div class="form-floating mb-3">
-                    <FluentTextInput Name="Input.Password"
-                                     Label="Passwort"
-                                     TextInputType="TextInputType.Password"
-                                     @bind-Value="Input.Password"
-                                     id="Input.Password"
-                                     class="form-control"
-                                     autocomplete="current-password"
-                                     Required="true"
-                                     placeholder="Passwort" />
+                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                    <label for="Input.Password">Password</label>
                     <ValidationMessage For="() => Input.Password" class="text-danger" />
                 </div>
                 <div class="checkbox mb-3">
@@ -66,7 +55,7 @@
                         <a href="Account/ForgotPassword">Forgot your password?</a>
                     </p>
                     <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
+                        <a href="@(NavigationManager.GetUriWithQueryParameters("account/register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register as a new user</a>
                     </p>
                     <p>
                         <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
