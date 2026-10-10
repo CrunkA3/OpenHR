@@ -1,5 +1,5 @@
 # Build-Kontext: Repository-Root (siehe docker-compose.yml)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY OpenHR.Web/OpenHR.Web.csproj OpenHR.Web/
 COPY OpenHR.ServiceDefaults/OpenHR.ServiceDefaults.csproj OpenHR.ServiceDefaults/
