@@ -29,8 +29,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
     volumes:
-      - ./Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ./ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ./data/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ./data/Https:/home/app/.aspnet/https:ro
 
   web:
     build:
@@ -53,8 +53,8 @@ services:
     ports:
       - "${WEB_PORT:-8080}:8080"
     volumes:
-      - ./Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ./ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ./data/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ./data/Https:/home/app/.aspnet/https:ro
 
 volumes:
   sqldata:
