@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+.docker-data/
 
 # User-specific files
 *.rsuser
