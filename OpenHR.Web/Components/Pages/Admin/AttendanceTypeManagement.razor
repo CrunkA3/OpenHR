@@ -46,7 +46,7 @@
         <input type="color"
                aria-label="Farbe"
                value="@(context.Color ?? "#808080")"
-               @oninput="@(e => AttendanceColorChanged(context, e.Value?.ToString()))" />
+               @onchange="@(e => AttendanceColorChanged(context, e.Value?.ToString()))" />
     </TemplateColumn>
     <TemplateColumn Title="Hat Kontingent?" SortBy="sortByHasQuota">
         <FluentCheckbox Value="@(context.HasQuota ?? false)"
