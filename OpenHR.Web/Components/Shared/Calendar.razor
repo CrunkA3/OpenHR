@@ -7,14 +7,16 @@
 
 <div class="calendar">
     <CascadingValue Value="attendanceTypes">
-        <FluentText As="TextTag.H1" Style="flex: 0.1;">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
+        <CascadingValue Value="attendances">
+            <FluentText As="TextTag.H1" Style="flex: 0.1;">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
 
-        <CalendarMonthHeader />
+            <CalendarMonthHeader />
 
-        @for (int i = 0; i < viewWeekCount; i++)
-        {
-            <CalendarWeek StartDate="@DateOnly.FromDateTime(viewStartDate.AddDays(i * 7))" ViewMonth="@DateOnly.FromDateTime(viewMonth)" />
-        }
+            @for (int i = 0; i < viewWeekCount; i++)
+            {
+                <CalendarWeek StartDate="@DateOnly.FromDateTime(viewStartDate.AddDays(i * 7))" ViewMonth="@DateOnly.FromDateTime(viewMonth)" />
+            }
+        </CascadingValue>
     </CascadingValue>
 </div>
 
@@ -28,10 +30,12 @@
 
     private List<AttendanceType>? attendanceTypes { get; set; }
 
+    private List<Attendance>? attendances { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await LoadAttendanceTypesAsync();
+        await LoadAttendancesAsync();
     }
 
 
@@ -44,6 +48,16 @@
         attendanceTypes = (
             await DbContext.AttendanceTypes
             .OrderBy(at => at.AttendanceName)
+            .ToListAsync()
+        );
+    }
+
+    private async Task LoadAttendancesAsync()
+    {
+        attendances = (
+            await DbContext.Attendances
+            .Where(a => a.Date >= DateOnly.FromDateTime(viewStartDate) && a.Date <= DateOnly.FromDateTime(viewEndDate))
+            .Include(a => a.ApplicationUser)
             .ToListAsync()
         );
     }

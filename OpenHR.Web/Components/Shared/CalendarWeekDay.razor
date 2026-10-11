@@ -1,12 +1,19 @@
 ﻿@using System.Globalization
-@using OpenHR.Web.Components.Pages
 
 @inject IDialogService DialogService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext DbContext
 
 <div class="day @(IsOtherMonth ? "other-month" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)" @onclick="HandleDayClickAsync">
     @Date.ToString("dd", CultureInfo.CurrentCulture)
+
+    @foreach (var attendance in AttendancesForDay)
+    {
+        <div class="attendance">
+            @attendance.ApplicationUser?.UserName
+        </div>
+    }
 </div>
 
 
@@ -19,6 +26,11 @@
 
     [CascadingParameter]
     private List<AttendanceType>? attendanceTypes { get; set; }
+
+    [CascadingParameter]
+    private List<Attendance>? attendances { get; set; }
+
+    private IEnumerable<Attendance> AttendancesForDay => attendances?.Where(a => a.Date == Date) ?? Enumerable.Empty<Attendance>();
 
     [Parameter, EditorRequired]
     public DateOnly Date { get; set; }
@@ -46,6 +58,9 @@
 
                     options.Parameters.Add(nameof(NewAttendanceDialog.Attendance), new Attendance { Date = Date, ApplicationUserId = currentUserId });
                     options.Parameters.Add(nameof(NewAttendanceDialog.AttendanceTypes), attendanceTypes);
+
+                    options.Footer.PrimaryAction.Label = "Speichern";
+                    options.Footer.SecondaryAction.Label = "Abbrechen";
                 });
 
         if (result.Cancelled)
@@ -54,7 +69,22 @@
         }
         else
         {
-            Console.WriteLine($"Dialog Saved: {result.Value}");
+            await SaveAttendanceAsync(result.Value as Attendance);
         }
+    }
+
+    private async Task SaveAttendanceAsync(Attendance? attendance)
+    {
+        if (attendance is null) return;
+
+        // Implement your logic to save the attendance record to the database
+        // For example:
+        await DbContext.Attendances.AddAsync(attendance);
+        await DbContext.SaveChangesAsync();
+
+        var user = await UserManager.FindByIdAsync(attendance.ApplicationUserId);
+        if (user is not null) attendance.ApplicationUser = user;
+
+        attendances?.Add(attendance);
     }
 }

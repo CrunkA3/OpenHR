@@ -1,11 +1,13 @@
 ﻿<div class="week">
     <CascadingValue Value="attendanceTypes">
-        @for (int i = 0; i < 7; i++)
-        {
-            var currentDate = StartDate.AddDays(i);
+        <CascadingValue Value="attendances">
+            @for (int i = 0; i < 7; i++)
+            {
+                var currentDate = StartDate.AddDays(i);
 
-            <CalendarWeekDay Date="currentDate" IsOtherMonth="!currentDate.Month.Equals(ViewMonth.Month)" />
-        }
+                <CalendarWeekDay Date="currentDate" IsOtherMonth="!currentDate.Month.Equals(ViewMonth.Month)" />
+            }
+        </CascadingValue>
     </CascadingValue>
 </div>
 
@@ -20,4 +22,6 @@
     [CascadingParameter]
     private List<AttendanceType>? attendanceTypes { get; set; }
 
+    [CascadingParameter]
+    private List<Attendance>? attendances { get; set; }
 }

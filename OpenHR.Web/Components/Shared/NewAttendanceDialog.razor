@@ -1,4 +1,6 @@
-﻿<FluentDialogBody>
+﻿@inherits FluentDialogInstance
+
+<FluentDialogBody>
 
     <FluentStack Orientation="Orientation.Vertical">
         @if (Attendance is not null)
@@ -24,20 +26,23 @@
     [Parameter]
     public List<AttendanceType>? AttendanceTypes { get; set; }
 
-    private async Task HandleValidSubmit()
+
+    protected override void OnInitializeDialog(DialogOptionsHeader header, DialogOptionsFooter footer)
     {
-        // Handle the form submission logic here
-        // For example, you can save the Attendance object to the database
-        await SaveAttendanceAsync(Attendance);
+        base.OnInitializeDialog(header, footer);
     }
 
-    private async Task SaveAttendanceAsync(Attendance? attendance)
+    protected override async Task OnActionClickedAsync(bool primary)
     {
-        if (attendance is null) return;
-
-        // Implement your logic to save the attendance record to the database
-        // For example:
-        // await DbContext.Attendances.AddAsync(attendance);
-        // await DbContext.SaveChangesAsync();
+        if (!primary)
+        {
+            // Handle the cancel action
+            await DialogInstance.CancelAsync();
+        }
+        else
+        {
+            // Handle the save action
+            await DialogInstance.CloseAsync(Attendance);
+        }
     }
 }
