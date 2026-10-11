@@ -1,12 +1,15 @@
 # Start: cp .env.example .env  (Werte anpassen)  &&  docker compose up -d --build
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?SQL_SA_PASSWORD fehlt}
+      MSSQL_PID: Express
     volumes:
-      - sqldata:/var/opt/mssql
+      - "${HOST_VOLUMES_PATH:-./.docker-data}/sql/data:/var/opt/mssql/data"
+      - "${HOST_VOLUMES_PATH:-./.docker-data}/sql/log:/var/opt/mssql/log"
+      - "${HOST_VOLUMES_PATH:-./.docker-data}/sql/secrets:/var/opt/mssql/secrets"
     healthcheck:
       test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q 'SELECT 1' || exit 1"]
       interval: 10s
@@ -47,8 +50,9 @@ services:
       services__apiservice__http__0: "http://localhost:7492"
       BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:?BOOTSTRAP_ADMIN_EMAIL fehlt}
       BootstrapAdmin__InitialPassword: ${BOOTSTRAP_ADMIN_PASSWORD:?BOOTSTRAP_ADMIN_PASSWORD fehlt}
+      Localization__DefaultCulture: ${DEFAULT_CULTURE:-de-DE}
     ports:
       - "${WEB_PORT:-8080}:8080"
-
-volumes:
-  sqldata:
+    volumes:
+      - "${HOST_VOLUMES_PATH:-./.docker-data}/usersecrets:/home/app/.microsoft/usersecrets:ro"
+      - "${HOST_VOLUMES_PATH:-./.docker-data}/https:/home/app/.aspnet/https:ro"
