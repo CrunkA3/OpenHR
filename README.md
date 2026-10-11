@@ -21,3 +21,5 @@ docker compose up -d --build
 Die Anwendung ist anschließend unter `http://localhost:8080` erreichbar (Port über `WEB_PORT` änderbar). Der Stack enthält SQL Server, Redis, `OpenHR.ApiService` und `OpenHR.Web`. Das Bootstrap-Administratorkonto wird über `BOOTSTRAP_ADMIN_EMAIL` und `BOOTSTRAP_ADMIN_PASSWORD` in der `.env` festgelegt.
 
 Den Host-Pfad für persistente Docker-Volumes können Sie in der `.env` über `HOST_VOLUMES_PATH` steuern (Standard: `./.docker-data`).
+
+Die Standardkultur der Web-App wird über `DEFAULT_CULTURE` in der `.env` gesteuert (Standard: `de-DE`).
