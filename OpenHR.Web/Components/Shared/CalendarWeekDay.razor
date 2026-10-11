@@ -11,7 +11,7 @@
     @foreach (var attendance in AttendancesForDay)
     {
         <div class="attendance">
-            @attendance.ApplicationUser?.UserName
+            @(attendance.ApplicationUser?.ShortName ?? attendance.ApplicationUser?.UserName)
         </div>
     }
 </div>

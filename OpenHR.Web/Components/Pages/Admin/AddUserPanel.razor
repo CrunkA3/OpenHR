@@ -8,8 +8,9 @@
 
 <FluentDialogBody>
     <FluentStack Orientation="Orientation.Vertical">
-        <FluentTextInput Name="Content.Email" @bind-Value="Content.Email" TextFieldType="TextFieldType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
-        <FluentTextInput Name="Content.InitialPassword" @bind-Value="Content.InitialPassword" TextFieldType="TextFieldType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
+        <FluentTextInput Name="Content.ShortName" @bind-Value="Content.ShortName" TextInputType="TextInputType.Text" Label="Kurzname" AutoComplete="none" Placeholder="Kurzname" />
+        <FluentTextInput Name="Content.Email" @bind-Value="Content.Email" TextInputType="TextInputType.Email" Label="Email" AutoComplete="none" Placeholder="Email" />
+        <FluentTextInput Name="Content.InitialPassword" @bind-Value="Content.InitialPassword" TextInputType="TextInputType.Password" Label="Passwort" AutoComplete="none" Placeholder="Passwort" />
     </FluentStack>
 </FluentDialogBody>
 
@@ -54,6 +55,9 @@
 
     public sealed class CreateUserInput
     {
+        [Required]
+        public string ShortName { get; set; } = "";
+
         [Required, EmailAddress]
         public string Email { get; set; } = "";
 

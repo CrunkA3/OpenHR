@@ -8,6 +8,12 @@
 <FluentCard OnClick="HandleClick">
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="3">
         <FluentText Size="TextSize.Size400">@User.Email</FluentText>
+
+        <FeedbackTextInput Value="@User.ShortName" Label="Kurzname"
+                           ValueChanged="@(newValue => HandleShortNameChanged(newValue))"
+                           Placeholder="Kurzname..."
+                           Width="100%" />
+
         <FluentDivider Appearance="DividerAppearance.Brand" />
         <FluentAutocomplete Label="Organisationseinheit" Items="organisationUnits" TOption="OrganisationUnit" TValue="Guid?"
                             OptionText="@(ou => ou.OrganisationUnitName)"
@@ -88,6 +94,16 @@
         User.OrganisationUnitLinks = currentMappings.Except(deleteMappings).Concat(newMappings).ToList();
     }
 
+
+
+    private async Task HandleShortNameChanged(string newShortName)
+    {
+        if (User.ShortName != newShortName)
+        {
+            await DbContext.Users.Where(u => u.Id == User.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.ShortName, newShortName));
+            User.ShortName = newShortName;
+        }
+    }
 
 
     /// <summary>

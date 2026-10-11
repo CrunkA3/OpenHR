@@ -225,6 +225,10 @@ namespace OpenHR.Web.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ShortName")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 

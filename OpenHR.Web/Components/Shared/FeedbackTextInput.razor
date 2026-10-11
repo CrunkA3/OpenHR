@@ -1,0 +1,50 @@
+﻿<FluentTextInput Label="@Label" Value="@Value"
+                 ValueChanged="HandleValueChanged"
+                 Placeholder="@Placeholder"
+                 Immediate="true" ImmediateDelay="500"
+                 Width="@Width">
+    <EndTemplate>
+        @if (endIcon is not null)
+        {
+            <FluentIcon Value="endIcon" />
+        }
+    </EndTemplate>
+</FluentTextInput>
+
+
+
+@code {
+    private Icon? endIcon = null;
+
+    private readonly Icon processingIcon = new Icons.Filled.Size20.SpinnerIos().WithColor(Color.Primary);
+    private readonly Icon successIcon = new Icons.Filled.Size20.Checkmark().WithColor(Color.Success);
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public string? Width { get; set; }
+
+
+
+    private async Task HandleValueChanged(string? newValue)
+    {
+        Value = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+
+        endIcon = successIcon;
+        StateHasChanged();
+
+        await Task.Delay(3000);
+        endIcon = null;
+    }
+}
