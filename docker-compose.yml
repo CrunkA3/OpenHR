@@ -1,10 +1,11 @@
 # Start: cp .env.example .env  (Werte anpassen)  &&  docker compose up -d --build
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: ${SQL_SA_PASSWORD:?SQL_SA_PASSWORD fehlt}
+      MSSQL_PID: Express
     volumes:
       - "${HOST_VOLUMES_PATH:-./.docker-data}/sql/data:/var/opt/mssql/data"
       - "${HOST_VOLUMES_PATH:-./.docker-data}/sql/log:/var/opt/mssql/log"
