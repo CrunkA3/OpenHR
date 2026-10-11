@@ -44,6 +44,7 @@
     </TemplateColumn>
     <TemplateColumn Title="Farbe" SortBy="sortByColor">
         <input type="color"
+               aria-label="Farbe"
                value="@(context.Color ?? "#808080")"
                @oninput="@(e => AttendanceColorChanged(context, e.Value?.ToString()))" />
     </TemplateColumn>
