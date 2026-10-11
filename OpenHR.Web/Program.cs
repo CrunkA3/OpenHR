@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -7,8 +8,22 @@ using OpenHR.Web.Components.Account;
 using OpenHR.Web;
 using OpenHR.Web.Components;
 using OpenHR.Web.Data;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var configuredDefaultCulture = builder.Configuration["Localization:DefaultCulture"] ?? "de-DE";
+var defaultCulture = CultureInfo.GetCultureInfo("de-DE");
+try
+{
+    defaultCulture = CultureInfo.GetCultureInfo(configuredDefaultCulture);
+}
+catch (CultureNotFoundException)
+{
+}
+
+CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
@@ -59,6 +74,13 @@ builder.Services.AddHttpClient<WeatherApiClient>(client =>
         client.BaseAddress = new("https+http://apiservice");
     });
 
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.SetDefaultCulture(defaultCulture.Name);
+    options.AddSupportedCultures(defaultCulture.Name);
+    options.AddSupportedUICultures(defaultCulture.Name);
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -72,6 +94,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+app.UseRequestLocalization();
 
 
 app.UseOutputCache();
