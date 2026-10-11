@@ -28,9 +28,6 @@ services:
       dockerfile: OpenHR.ApiService/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-    volumes:
-      - ./data/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ./data/Https:/home/app/.aspnet/https:ro
 
   web:
     build:
