@@ -13,7 +13,8 @@ namespace OpenHR.Web.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "Color",
                 table: "AttendanceTypes",
-                type: "nvarchar(max)",
+                type: "nvarchar(7)",
+                maxLength: 7,
                 nullable: true);
         }
 

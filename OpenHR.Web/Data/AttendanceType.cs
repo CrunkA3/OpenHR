@@ -23,7 +23,7 @@ public sealed class AttendanceType
     [Required, DefaultValue(false)]
     public bool? HasQuota { get; set; }
 
-    [Length(7, 7)]
+    [StringLength(7, MinimumLength = 7)]
     [RegularExpression("^#([0-9a-fA-F]{6})$")]
     public string? Color { get; set; }
 

@@ -12,7 +12,7 @@ using OpenHR.Web.Data;
 namespace OpenHR.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20261011154144_AddAttendanceTypeColor")]
+    [Migration("20261011154508_AddAttendanceTypeColor")]
     partial class AddAttendanceTypeColor
     {
         /// <inheritdoc />
@@ -332,7 +332,8 @@ namespace OpenHR.Web.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
 
                     b.Property<bool>("HasQuota")
                         .HasColumnType("bit");

@@ -329,7 +329,8 @@ namespace OpenHR.Web.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Color")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
 
                     b.Property<bool>("HasQuota")
                         .HasColumnType("bit");
