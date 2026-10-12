@@ -6,16 +6,16 @@
     <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Home())" IconActive="@(new Icons.Filled.Size20.Home())">Home</FluentNavItem>
     <AuthorizeView Roles="Administrator">
         <Authorized>
-            <FluentNavCategory Title="Admin" IconRest="@(new Icons.Regular.Size20.ShieldSettings())" IconActive="@(new Icons.Regular.Size20.ShieldSettings())">
-                <FluentNavItem Href="admin/users" IconRest="@(new Icons.Regular.Size20.PersonAccounts())">Benutzer</FluentNavItem>
-                <FluentNavItem Href="/admin/attendance-type-management" IconRest="@(new Icons.Regular.Size20.SlideHide())">Anwesenheitstypen</FluentNavItem>
-                <FluentNavItem Href="/admin/organisation-unit-management" IconRest="@(new Icons.Regular.Size20.SlideHide())">Organisationseinheiten</FluentNavItem>
+            <FluentNavCategory Title="Admin" IconRest="@(new Icons.Regular.Size20.ShieldSettings())" IconActive="@(new Icons.Filled.Size20.ShieldSettings())">
+                <FluentNavItem Href="admin/users" IconRest="@(new Icons.Regular.Size20.PersonAccounts())" IconActive="@(new Icons.Filled.Size20.PersonAccounts())">Benutzer</FluentNavItem>
+                <FluentNavItem Href="/admin/attendance-type-management" IconRest="@(new Icons.Regular.Size20.WeatherSunnyLow())" IconActive="@(new Icons.Filled.Size20.WeatherSunnyLow())">Anwesenheitstypen</FluentNavItem>
+                <FluentNavItem Href="/admin/organisation-unit-management" IconRest="@(new Icons.Regular.Size20.Organization())" IconActive="@(new Icons.Filled.Size20.Organization())">Organisationseinheiten</FluentNavItem>
             </FluentNavCategory>
         </Authorized>
     </AuthorizeView>
     <AuthorizeView>
         <Authorized>
-            <FluentNavItem href="Account/Manage" IconRest="@(new Icons.Regular.Size20.Person())">
+            <FluentNavItem href="Account/Manage" IconRest="@(new Icons.Regular.Size20.Person())" IconActive="@(new Icons.Filled.Size20.Person())">
                 @context.User.Identity?.Name
             </FluentNavItem>
             <form action="Account/Logout" method="post">
