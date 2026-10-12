@@ -7,6 +7,7 @@
 @using Microsoft.EntityFrameworkCore
 
 @inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
 @inject IDialogService DialogService
 @inject ApplicationDbContext DbContext
 
@@ -40,7 +41,7 @@
         </FluentCard>
     </FluentGridItem>
 
-    @if (users is null)
+    @if (userData is null)
     {
         <FluentSkeleton Circular="false" Shimmer="true" Width="100%" Height="200px">
         </FluentSkeleton>
@@ -50,12 +51,15 @@
         <CascadingValue Value="organisationUnits">
             <CascadingValue Value="attendanceTypes">
                 <CascadingValue Value="attendanceQuotas">
-                    @foreach (var user in FilteredItems ?? Enumerable.Empty<ApplicationUser>())
-                    {
-                        <FluentGridItem>
-                            <UserManagementItem User="user" />
-                        </FluentGridItem>
-                    }
+                    <CascadingValue Value="roles">
+
+                        @foreach (var user in FilteredItems ?? Enumerable.Empty<UserManagementItemData>())
+                        {
+                            <FluentGridItem>
+                                <UserManagementItem UserData="user" />
+                            </FluentGridItem>
+                        }
+                    </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>
@@ -66,7 +70,8 @@
 @code {
     string emailFilter = string.Empty;
 
-    private IQueryable<ApplicationUser>? users;
+    private IQueryable<UserManagementItemData>? userData;
+    private List<IdentityRole>? roles;
     private List<OrganisationUnit>? organisationUnits;
     private List<AttendanceType>? attendanceTypes;
     private List<ApplicationUserAttendanceQuota>? attendanceQuotas;
@@ -74,15 +79,15 @@
     private string? message;
 
 
-    IQueryable<ApplicationUser>? FilteredItems
+    IQueryable<UserManagementItemData>? FilteredItems
     {
         get
         {
-            var result = users;
+            var result = userData;
 
             if (result is not null && !string.IsNullOrEmpty(emailFilter))
             {
-                result = result.Where(c => !string.IsNullOrEmpty(c.Email) && c.Email.Contains(emailFilter, StringComparison.CurrentCultureIgnoreCase));
+                result = result.Where(c => !string.IsNullOrEmpty(c.User.Email) && c.User.Email.Contains(emailFilter, StringComparison.CurrentCultureIgnoreCase));
             }
 
             return result;
@@ -176,12 +181,33 @@
 
     private async Task LoadUsersAsync()
     {
-        users = (await UserManager.Users
+        roles = await RoleManager.Roles
+                    .OrderBy(role => role.Name)
+                    .ToListAsync();
+
+        var users = (await UserManager.Users
             .OrderBy(user => user.Email)
             .Include(user => user.OrganisationUnitLinks)
             .ThenInclude(link => link.OrganisationUnit)
             .ToListAsync()).AsQueryable();
+
+
+        var userDataList = new List<UserManagementItemData>();
+
+        foreach (var user in users)
+        {
+            var roleNames = await UserManager.GetRolesAsync(user);
+            var userRoles = roles?.Where(role => !string.IsNullOrEmpty(role.Name) && roleNames.Contains(role.Name)).ToList() ?? new List<IdentityRole>();
+            userDataList.Add(new UserManagementItemData
+            {
+                User = user,
+                Roles = userRoles
+            });
+        }
+
+        userData = userDataList.AsQueryable();
     }
+
 
     private async Task LoadOrganisationUnitsAsync() => organisationUnits = (await DbContext.OrganisationUnits.OrderBy(ou => ou.OrganisationUnitName).ToListAsync());
 

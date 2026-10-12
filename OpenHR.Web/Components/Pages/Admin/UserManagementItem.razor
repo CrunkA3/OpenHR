@@ -7,21 +7,14 @@
 
 <FluentCard OnClick="HandleClick">
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="3">
-        <FluentText Size="TextSize.Size400">@User.Email</FluentText>
+        <FluentText Size="TextSize.Size400">@UserData.User.Email</FluentText>
 
-        <FeedbackTextInput Value="@User.ShortName" Label="Kurzname"
+        <FeedbackTextInput Value="@UserData.User.ShortName" Label="Kurzname"
                            ValueChanged="@(newValue => HandleShortNameChanged(newValue))"
                            Placeholder="Kurzname..."
                            Width="100%" />
 
         <FluentDivider Appearance="DividerAppearance.Brand" />
-        <FluentAutocomplete Label="Organisationseinheit" Items="organisationUnits" TOption="OrganisationUnit" TValue="Guid?"
-                            OptionText="@(ou => ou.OrganisationUnitName)"
-                            OptionValue="@(ou => ou.Key)"
-                            SelectedItemsChanged="@(items => HandleSelectedItemsChanged(items))"
-                            SelectedItems="@(User.OrganisationUnitLinks.Select(ou => ou.OrganisationUnit))"
-                            Placeholder="Organisationseinheiten auswählen..."
-                            Width="100%" />
 
         @if (attendanceTypes is not null && attendanceQuotas is not null)
         {
@@ -34,12 +27,34 @@
                                      Width="100%" />
             }
         }
+
+        <FluentDivider Appearance="DividerAppearance.Brand" />
+
+        <FluentAutocomplete Label="Organisationseinheit" Items="organisationUnits" TOption="OrganisationUnit" TValue="Guid?"
+                            OptionText="@(ou => ou.OrganisationUnitName)"
+                            OptionValue="@(ou => ou.Key)"
+                            SelectedItemsChanged="@(items => HandleOrganisationUnitChanged(items))"
+                            SelectedItems="@(UserData.User.OrganisationUnitLinks.Select(ou => ou.OrganisationUnit))"
+                            Placeholder="Organisationseinheiten auswählen..."
+                            Width="100%" />
+
+        <FluentAutocomplete Label="Rollen" Items="roles" TOption="IdentityRole" TValue="string"
+                            OptionText="@(r => r.Name)"
+                            OptionValue="@(r => r.Id)"
+                            SelectedItemsChanged="@(items => HandleRoleChanged(items))"
+                            SelectedItems="@(UserData.Roles)"
+                            Placeholder="Rollen auswählen..."
+                            Width="100%" />
+
     </FluentStack>
 </FluentCard>
 
 @code {
     [Parameter, EditorRequired]
-    public ApplicationUser User { get; set; } = default!;
+    public UserManagementItemData UserData { get; set; } = default!;
+
+    [CascadingParameter]
+    private List<IdentityRole> roles { get; set; } = default!;
 
     [CascadingParameter]
     private List<OrganisationUnit> organisationUnits { get; set; } = default!;
@@ -51,9 +66,14 @@
     private List<ApplicationUserAttendanceQuota> attendanceQuotas { get; set; } = default!;
 
 
+
+
+
+
+
     private int? GetAttendanceQuota(AttendanceType attendanceType)
     {
-        return attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == User.Id && q.AttendanceTypeKey == attendanceType.Key)?.Quota;
+        return attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == UserData.User.Id && q.AttendanceTypeKey == attendanceType.Key)?.Quota;
     }
 
 
@@ -73,35 +93,70 @@
     /// </summary>
     /// <param name="selectedItems">The newly selected organisation units.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    private async Task HandleSelectedItemsChanged(IEnumerable<OrganisationUnit> selectedItems)
+    private async Task HandleOrganisationUnitChanged(IEnumerable<OrganisationUnit> selectedItems)
     {
         var selectedOrganisationUnits = selectedItems.ToList();
-        var currentMappings = await DbContext.ApplicationUserOrganisationUnits.Where(map => map.ApplicationUserId == User.Id).ToListAsync();
+        var currentMappings = await DbContext.ApplicationUserOrganisationUnits.Where(map => map.ApplicationUserId == UserData.User.Id).ToListAsync();
         var newKeys = selectedOrganisationUnits.Select(ou => ou.Key).ToArray();
 
         var deleteMappings = currentMappings.Where(map => !newKeys.Contains(map.OrganisationUnitKey)).ToList();
         var newMappings = newKeys.Where(ou => ou != null && !currentMappings.Any(map => map.OrganisationUnitKey == ou)).Select(ou => new ApplicationUserOrganisationUnit
         {
-            ApplicationUserId = User.Id,
+            ApplicationUserId = UserData.User.Id,
             OrganisationUnitKey = ou!.Value,
-            ApplicationUser = User,
+            ApplicationUser = UserData.User,
             OrganisationUnit = selectedOrganisationUnits.First(unit => unit.Key == ou)
         }).ToList();
 
         DbContext.ApplicationUserOrganisationUnits.RemoveRange(deleteMappings);
         DbContext.ApplicationUserOrganisationUnits.AddRange(newMappings);
         await DbContext.SaveChangesAsync();
-        User.OrganisationUnitLinks = currentMappings.Except(deleteMappings).Concat(newMappings).ToList();
+        UserData.User.OrganisationUnitLinks = currentMappings.Except(deleteMappings).Concat(newMappings).ToList();
     }
 
+
+    private async Task HandleRoleChanged(IEnumerable<IdentityRole> identityRoles)
+    {
+        var selectedRoles = identityRoles.ToList();
+        var currentMappings = await UserManager.GetRolesAsync(UserData.User);
+        var newRoleNames = selectedRoles.Select(ou => ou.Name).ToArray();
+
+        var deleteMappings = currentMappings.Where(map => !newRoleNames.Contains(map)).ToList();
+        var newMappings = newRoleNames
+                            .Where(r => !string.IsNullOrEmpty(r) && !currentMappings.Any(map => map == r))
+                            .Select(r => r!)
+                            .ToList();
+
+
+        if (deleteMappings.Count > 0)
+        {
+            var roleResult = await UserManager.RemoveFromRolesAsync(UserData.User, deleteMappings);
+            if (!roleResult.Succeeded)
+            {
+                throw new InvalidOperationException($"The roles could not be deleted: {string.Join(", ", roleResult.Errors.Select(error => error.Description))}");
+            }
+        }
+
+        if (newMappings.Count > 0)
+        {
+            var roleResult = await UserManager.AddToRolesAsync(UserData.User, newMappings);
+            if (!roleResult.Succeeded)
+            {
+                throw new InvalidOperationException($"The roles could not be assigned: {string.Join(", ", roleResult.Errors.Select(error => error.Description))}");
+            }
+        }
+
+
+        UserData.Roles = identityRoles.ToList();
+    }
 
 
     private async Task HandleShortNameChanged(string newShortName)
     {
-        if (User.ShortName != newShortName)
+        if (UserData.User.ShortName != newShortName)
         {
-            await DbContext.Users.Where(u => u.Id == User.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.ShortName, newShortName));
-            User.ShortName = newShortName;
+            await DbContext.Users.Where(u => u.Id == UserData.User.Id).ExecuteUpdateAsync(u => u.SetProperty(u => u.ShortName, newShortName));
+            UserData.User.ShortName = newShortName;
         }
     }
 
@@ -116,7 +171,7 @@
     {
         var currentYear = DateTime.Now.Year;
 
-        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == User.Id && q.AttendanceTypeKey == attendanceType.Key && q.ValidFromYear == currentYear) is { } existingQuota)
+        if (attendanceQuotas?.FirstOrDefault(q => q.ApplicationUserId == UserData.User.Id && q.AttendanceTypeKey == attendanceType.Key && q.ValidFromYear == currentYear) is { } existingQuota)
         {
             if (newQuota.HasValue)
             {
@@ -141,7 +196,7 @@
         // Create a new entry
         var newQuotaEntry = new ApplicationUserAttendanceQuota
         {
-            ApplicationUserId = User.Id,
+            ApplicationUserId = UserData.User.Id,
             AttendanceTypeKey = attendanceType.Key!.Value,
             ValidFromYear = currentYear,
             Quota = newQuota.Value
