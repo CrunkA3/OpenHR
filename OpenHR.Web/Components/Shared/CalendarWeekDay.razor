@@ -11,6 +11,8 @@
     @foreach (var attendance in AttendancesForDay)
     {
         <div class="attendance">
+            <span class="attendance-color-bar" aria-hidden="true" style="background-color: @(GetAttendanceColor(attendance));"></span>
+            @(attendanceTypes?.FirstOrDefault(type => type.Key == attendance.AttendanceTypeKey)?.AttendanceShortName)
             @(attendance.ApplicationUser?.ShortName ?? attendance.ApplicationUser?.UserName)
         </div>
     }
@@ -31,6 +33,9 @@
     private List<Attendance>? attendances { get; set; }
 
     private IEnumerable<Attendance> AttendancesForDay => attendances?.Where(a => a.Date == Date) ?? Enumerable.Empty<Attendance>();
+
+    private string GetAttendanceColor(Attendance attendance) =>
+        attendanceTypes?.FirstOrDefault(type => type.Key == attendance.AttendanceTypeKey)?.Color ?? "#808080";
 
     [Parameter, EditorRequired]
     public DateOnly Date { get; set; }

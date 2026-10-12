@@ -27,3 +27,18 @@
         --colorBrandBackground: var(--colorPaletteRedBorder1);
         --colorBrandForeground1: var(--colorPaletteRedForeground1);
     }
+
+.attendance {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+}
+
+.attendance-color-bar {
+    width: 0.25rem;
+    min-width: 0.25rem;
+    height: 0.95rem;
+    border-radius: 0.125rem;
+    display: inline-block;
+}
