@@ -6,6 +6,7 @@
     border-radius: var(--calendar-day-border-radius);
     margin: var(--calendar-day-margin);
     padding-right: calc(var(--calendar-day-border-radius)/2);
+    padding-left: calc(var(--calendar-day-border-radius)/2);
     overflow: auto;
     box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground) 37%, transparent) inset;
     backdrop-filter: blur(4px);
@@ -29,16 +30,14 @@
     }
 
 .attendance {
+    font-size: var(--calendar-attendance-fontsize);
     display: flex;
+    height: var(--calendar-attendance-height);
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 0.35rem;
-}
-
-.attendance-color-bar {
-    width: 0.25rem;
-    min-width: 0.25rem;
-    height: 0.95rem;
-    border-radius: 0.125rem;
-    display: inline-block;
+    border: 1px solid;
+    border-radius: calc(var(--calendar-attendance-height)/2);
+    border-left-width: calc(var(--calendar-attendance-height)/2);
+    padding-left: calc(var(--calendar-attendance-height)/4);
 }

@@ -10,9 +10,10 @@
 
     @foreach (var attendance in AttendancesForDay)
     {
-        <div class="attendance">
-            <span class="attendance-color-bar" aria-hidden="true" style="background-color: @(GetAttendanceColor(attendance));"></span>
-            @(attendanceTypes?.FirstOrDefault(type => type.Key == attendance.AttendanceTypeKey)?.AttendanceShortName)
+        var attendanceShortName = attendance.AttendanceType?.AttendanceShortName ?? attendance.AttendanceTypeKey.ToString();
+
+        <div class="attendance" title="@attendanceShortName"
+             style="border-color: @(GetAttendanceColor(attendance));">
             @(attendance.ApplicationUser?.ShortName ?? attendance.ApplicationUser?.UserName)
         </div>
     }

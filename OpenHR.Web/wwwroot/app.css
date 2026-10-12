@@ -7,6 +7,8 @@
     --content-padding-left: 1.5rem;
     --calendar-day-border-radius: 1rem;
     --calendar-day-margin: 0.25rem;
+    --calendar-attendance-fontsize: 14px;
+    --calendar-attendance-height: calc(var(--calendar-attendance-fontsize)*2);
 }
 
 body {
