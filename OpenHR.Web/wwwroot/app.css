@@ -9,6 +9,7 @@
     --calendar-day-margin: 0.25rem;
     --calendar-attendance-fontsize: 14px;
     --calendar-attendance-height: calc(var(--calendar-attendance-fontsize)*2);
+    --calendar-small-day-min-height: 20dvh;
 }
 
 body {

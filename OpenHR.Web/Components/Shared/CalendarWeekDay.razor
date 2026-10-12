@@ -6,7 +6,8 @@
 @inject ApplicationDbContext DbContext
 
 <div class="day @(IsOtherMonth ? "other-month" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)" @onclick="HandleDayClickAsync">
-    @Date.ToString("dd", CultureInfo.CurrentCulture)
+    <div class="date-short">@Date.ToString("dd", CultureInfo.CurrentCulture)</div>
+    <div class="date-long">@Date.ToString("D", CultureInfo.CurrentCulture)</div>
 
     @foreach (var attendance in AttendancesForDay)
     {

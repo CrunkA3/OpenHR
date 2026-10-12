@@ -29,6 +29,29 @@
         --colorBrandForeground1: var(--colorPaletteRedForeground1);
     }
 
+
+.date-short {
+    display: block;
+}
+
+.date-long {
+    display: none;
+}
+
+@media(max-width: 960px) {
+    .day {
+        min-height: var(--calendar-small-day-min-height);
+    }
+
+    .date-short {
+        display: none;
+    }
+
+    .date-long {
+        display: block;
+    }
+}
+
 .attendance {
     font-size: var(--calendar-attendance-fontsize);
     display: flex;

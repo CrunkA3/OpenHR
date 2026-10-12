@@ -4,6 +4,12 @@
     display: flex;
 }
 
+@media(max-width: 960px) {
+    .month-header {
+        display: none;
+    }
+}
+
 /* CSS for CalendarWeekDay component */
 .month-header-day {
     flex: 1;
