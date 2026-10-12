@@ -2,7 +2,7 @@
 
 @inject NavigationManager NavigationManager
 
-<FluentNav Id="main-menu" Width="250">
+<FluentNav Id="main-menu" >
     <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Home())" IconActive="@(new Icons.Filled.Size20.Home())">Home</FluentNavItem>
     <AuthorizeView Roles="Administrator">
         <Authorized>

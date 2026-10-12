@@ -10,32 +10,45 @@
 
 <PageTitle>Profil</PageTitle>
 
-<FluentLabel Typo="Typography.H3">Profil</FluentLabel>
-<StatusMessage />
 
-<div class="row">
-    <div class="col-xl-6">
-        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <FluentStack Orientation="Orientation.Vertical">
-                <FluentValidationSummary />
-                <div>
-                    <FluentTextInput TextFieldType="TextFieldType.Email" Name="username" @bind-Value="username" Placeholder="Email" />
-                    <FluentValidationMessage For="() => username" />
-                </div>
-                <div>
-                    <FluentTextInput TextFieldType="TextFieldType.Tel" Name="Input.PhoneNumber" @bind-Value="Input.PhoneNumber" Placeholder="Telefon" />
-                    <FluentValidationMessage For="() => Input.PhoneNumber" />
-                </div>
+<FluentCard>
+    <FluentText As="TextTag.H2">Profil</FluentText>
+    <StatusMessage />
 
-                <FluentButton Type="ButtonType.Submit" Appearance="ButtonAppearance.Primary">Speichern</FluentButton>
-            </FluentStack>
-        </EditForm>
-    </div>
-</div>
+    <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+        <DataAnnotationsValidator />
+        <FluentStack Orientation="Orientation.Vertical">
+            <FluentValidationSummary />
+
+            <div>
+                <FluentTextInput TextInputType="TextInputType.Text"
+                                 Name="Input.ShortName" @bind-Value="Input.ShortName"
+                                 Placeholder="Kurzname" Label="Kurzname" />
+                <FluentValidationMessage For="() => Input.ShortName" />
+            </div>
+
+            <div>
+                <FluentTextInput TextInputType="TextInputType.Email"
+                                 Name="username" @bind-Value="username"
+                                 Placeholder="Email" Label="Email"
+                                 ReadOnly="true"/>
+                <FluentValidationMessage For="() => username" />
+            </div>
+            <div>
+                <FluentTextInput TextInputType="TextInputType.Telephone"
+                                 Name="Input.PhoneNumber" @bind-Value="Input.PhoneNumber"
+                                 Placeholder="Telefon" Label="Telefon" />
+                <FluentValidationMessage For="() => Input.PhoneNumber" />
+            </div>
+
+            <FluentButton Type="ButtonType.Submit" Appearance="ButtonAppearance.Primary">Speichern</FluentButton>
+        </FluentStack>
+    </EditForm>
+</FluentCard>
 
 @code {
     private ApplicationUser? user;
+    private string? shortName;
     private string? username;
     private string? phoneNumber;
 
@@ -58,7 +71,9 @@
 
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+        shortName = user.ShortName;
 
+        Input.ShortName ??= shortName;
         Input.PhoneNumber ??= phoneNumber;
     }
 
@@ -86,6 +101,10 @@
 
     private sealed class InputModel
     {
+        [Phone]
+        [Display(Name = "Kurzname")]
+        public string? ShortName { get; set; }
+
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
