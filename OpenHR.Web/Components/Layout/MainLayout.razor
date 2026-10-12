@@ -2,13 +2,14 @@
 
 <FluentLayout>
     <FluentLayoutItem Area="@LayoutArea.Header">
+        <FluentLayoutHamburger />
         OpenHR
     </FluentLayoutItem>
     <FluentLayoutItem Area="@LayoutArea.Navigation">
         <NavMenu @rendermode="InteractiveServer" />
     </FluentLayoutItem>
 
-    <FluentLayoutItem Area="@LayoutArea.Content">
+    <FluentLayoutItem Area="@LayoutArea.Content" Class="main">
         <div class="content">
             @Body
         </div>
