@@ -23,3 +23,4 @@ Die Anwendung ist anschließend unter `http://localhost:8080` erreichbar (Port �
 Den Host-Pfad für persistente Docker-Volumes können Sie in der `.env` über `HOST_VOLUMES_PATH` steuern (Standard: `./.docker-data`).
 
 Die Standardkultur der Web-App wird über `DEFAULT_CULTURE` in der `.env` gesteuert (Standard: `de-DE`).
+Der App-Titel im Header kann über `APP_TITLE` in der `.env` angepasst werden (Standard: `OpenHR`).
