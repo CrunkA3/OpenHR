@@ -1,9 +1,12 @@
 ﻿@using System.Globalization
+@using Microsoft.EntityFrameworkCore;
 
 @inject IDialogService DialogService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApplicationDbContext DbContext
+
+@inject ILogger<CalendarWeekDay> Logger
 
 <div class="day @(IsOtherMonth ? "other-month" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)" @onclick="HandleDayClickAsync">
     <div class="date-short">@Date.ToString("dd", CultureInfo.CurrentCulture)</div>
@@ -57,18 +60,27 @@
     {
         if (currentUserId is null) return;
 
+        var user = await UserManager.FindByIdAsync(currentUserId);
+        if (user is null) return;
+
+        var isCoordinator = await UserManager.IsInRoleAsync(user, IdentityDatabaseInitializer.CoordinatorRole);
+
+        List<ApplicationUser>? users = isCoordinator ? await UserManager.Users.ToListAsync() : null;
+
         var result = await DialogService.ShowDialogAsync<NewAttendanceDialog>(options =>
-                {
-                    options.Modal = false;
-                    options.Size = DialogSize.Large;
-                    options.Alignment = DialogAlignment.Default;
+                        {
+                            options.Modal = false;
+                            options.Size = DialogSize.Large;
+                            options.Alignment = DialogAlignment.Default;
 
-                    options.Parameters.Add(nameof(NewAttendanceDialog.Attendance), new Attendance { Date = Date, ApplicationUserId = currentUserId });
-                    options.Parameters.Add(nameof(NewAttendanceDialog.AttendanceTypes), attendanceTypes);
+                            options.Parameters.Add(nameof(NewAttendanceDialog.Attendance), new Attendance { Date = Date, ApplicationUserId = currentUserId });
+                            options.Parameters.Add(nameof(NewAttendanceDialog.AttendanceTypes), attendanceTypes);
+                            options.Parameters.Add(nameof(NewAttendanceDialog.IsCoordinator), isCoordinator);
+                            options.Parameters.Add(nameof(NewAttendanceDialog.Users), users);
 
-                    options.Footer.PrimaryAction.Label = "Speichern";
-                    options.Footer.SecondaryAction.Label = "Abbrechen";
-                });
+                            options.Footer.PrimaryAction.Label = "Speichern";
+                            options.Footer.SecondaryAction.Label = "Abbrechen";
+                        });
 
         if (result.Cancelled)
         {
@@ -76,16 +88,22 @@
         }
         else
         {
-            await SaveAttendanceAsync(result.Value as Attendance);
+            var attendance = result.Value as Attendance;
+            if (attendance is null) return;
+
+            if (attendance.ApplicationUserId != currentUserId && !isCoordinator)
+            {
+                // User is trying to add attendance for another user without being a coordinator
+                Logger.LogCritical("Unauthorized attempt to add attendance for another user. UserId: {UserId}, AttemptedUserId: {AttemptedUserId}", currentUserId, attendance.ApplicationUserId);
+                return;
+            }
+
+            await SaveAttendanceAsync(attendance);
         }
     }
 
-    private async Task SaveAttendanceAsync(Attendance? attendance)
+    private async Task SaveAttendanceAsync(Attendance attendance)
     {
-        if (attendance is null) return;
-
-        // Implement your logic to save the attendance record to the database
-        // For example:
         await DbContext.Attendances.AddAsync(attendance);
         await DbContext.SaveChangesAsync();
 

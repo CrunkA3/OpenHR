@@ -1,10 +1,24 @@
 ﻿@inherits FluentDialogInstance
 
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 <FluentDialogBody>
 
     <FluentStack Orientation="Orientation.Vertical">
         @if (Attendance is not null)
         {
+            if (IsCoordinator && Users is not null)
+            {
+                <FluentSelect @bind-Value="Attendance.ApplicationUserId"
+                              Items="Users"
+                              TValue="string" TOption="ApplicationUser"
+                              OptionText="@(item => item.ShortName ?? item.UserName)"
+                              OptionValue="@(item => item.Id)"
+                              Label="Benutzer"
+                              Required="true" />
+            }
+
             <FluentDatePicker @bind-Value="Attendance.Date" Label="Datum" Required="true" />
             <FluentSelect @bind-Value="Attendance.AttendanceTypeKey"
                           Items="AttendanceTypes"
@@ -26,10 +40,17 @@
     [Parameter]
     public List<AttendanceType>? AttendanceTypes { get; set; }
 
+    [Parameter]
+    public bool IsCoordinator { get; set; } = false;
 
+    [Parameter]
+    public IEnumerable<ApplicationUser>? Users { get; set; }
+
+
+ 
     protected override void OnInitializeDialog(DialogOptionsHeader header, DialogOptionsFooter footer)
     {
-        base.OnInitializeDialog(header, footer);
+        header.Title = "Neue Anwesenheit";
     }
 
     protected override async Task OnActionClickedAsync(bool primary)
