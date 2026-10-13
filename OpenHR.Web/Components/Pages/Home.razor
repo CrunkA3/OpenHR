@@ -2,11 +2,13 @@
 
 @using OpenHR.Web.Components.Shared
 
+@inject IConfiguration Configuration
+
 @rendermode InteractiveServer
 
 @attribute [Authorize]
 
-<PageTitle>OpenHR</PageTitle>
+<PageTitle>@(Configuration["App:Title"] ?? "OpenHR")</PageTitle>
 
 <Calendar />
 
