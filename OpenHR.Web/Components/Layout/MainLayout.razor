@@ -1,9 +1,10 @@
 ﻿@inherits LayoutComponentBase
+@inject IConfiguration Configuration
 
 <FluentLayout>
     <FluentLayoutItem Area="@LayoutArea.Header">
         <FluentLayoutHamburger />
-        OpenHR
+        @(Configuration["App:Title"] ?? "OpenHR")
     </FluentLayoutItem>
     <FluentLayoutItem Area="@LayoutArea.Navigation">
         <NavMenu @rendermode="InteractiveServer" />
