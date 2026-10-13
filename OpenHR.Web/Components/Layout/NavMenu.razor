@@ -1,8 +1,10 @@
 ﻿@implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<FluentNav Id="main-menu" >
+<FluentNav Id="main-menu">
     <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Home())" IconActive="@(new Icons.Filled.Size20.Home())">Home</FluentNavItem>
     <AuthorizeView Roles="Administrator">
         <Authorized>
@@ -16,7 +18,7 @@
     <AuthorizeView>
         <Authorized>
             <FluentNavItem href="Account/Manage" IconRest="@(new Icons.Regular.Size20.Person())" IconActive="@(new Icons.Filled.Size20.Person())">
-                @context.User.Identity?.Name
+                @(user?.ShortName ?? context.User.Identity?.Name)
             </FluentNavItem>
             <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
@@ -37,10 +39,17 @@
 @code {
     private string? currentUrl;
 
-    protected override void OnInitialized()
+    private ApplicationUser? user;
+
+    protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated ?? false)
+        {
+            user = await UserManager.GetUserAsync(authState.User);
+        }
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
