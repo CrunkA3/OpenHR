@@ -104,12 +104,27 @@
 
     private async Task SaveAttendanceAsync(Attendance attendance)
     {
-        await DbContext.Attendances.AddAsync(attendance);
+        var existingAttendance = await DbContext.Attendances
+            .FirstOrDefaultAsync(a => a.Date == attendance.Date && a.ApplicationUserId == attendance.ApplicationUserId);
+
+        if (existingAttendance is not null)
+        {
+            existingAttendance.AttendanceTypeKey = attendance.AttendanceTypeKey;
+            DbContext.Entry(existingAttendance).State = EntityState.Modified;
+            var oldAttendance = attendances?.FirstOrDefault(a => a.Date == attendance.Date && a.ApplicationUserId == attendance.ApplicationUserId);
+            oldAttendance?.AttendanceTypeKey = attendance.AttendanceTypeKey;
+            oldAttendance?.AttendanceType = attendanceTypes?.FirstOrDefault(at => at.Key == attendance.AttendanceTypeKey) ?? new AttendanceType();
+        }
+        else
+        {
+            await DbContext.Attendances.AddAsync(attendance);
+            var user = await UserManager.FindByIdAsync(attendance.ApplicationUserId);
+            if (user is not null) attendance.ApplicationUser = user;
+
+            attendances?.Add(attendance);
+        }
+
         await DbContext.SaveChangesAsync();
 
-        var user = await UserManager.FindByIdAsync(attendance.ApplicationUserId);
-        if (user is not null) attendance.ApplicationUser = user;
-
-        attendances?.Add(attendance);
     }
 }

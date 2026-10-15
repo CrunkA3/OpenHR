@@ -308,7 +308,7 @@ namespace OpenHR.Web.Migrations
 
                     b.HasIndex("AttendanceTypeKey");
 
-                    b.HasIndex("ApplicationUserId", "AttendanceTypeKey", "Date")
+                    b.HasIndex("ApplicationUserId", "Date")
                         .IsUnique();
 
                     b.ToTable("Attendances");

@@ -29,7 +29,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(x => x.ApplicationUserId);
 
         builder.Entity<Attendance>()
-            .HasIndex(x => new { x.ApplicationUserId, x.AttendanceTypeKey, x.Date })
+            .HasIndex(x => new { x.ApplicationUserId, x.Date })
             .IsUnique();
 
         builder.Entity<Attendance>()
