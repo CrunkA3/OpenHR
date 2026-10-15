@@ -5,7 +5,9 @@
             {
                 var currentDate = StartDate.AddDays(i);
 
-                <CalendarWeekDay Date="currentDate" IsOtherMonth="!currentDate.Month.Equals(ViewMonth.Month)" />
+                <CalendarWeekDay Date="currentDate"
+                                 IsOtherMonth="!currentDate.Month.Equals(ViewMonth.Month)"
+                                 AttendancesChanged="AttendancesChanged" />
             }
         </CascadingValue>
     </CascadingValue>
@@ -17,6 +19,9 @@
 
     [Parameter, EditorRequired]
     public DateOnly ViewMonth { get; set; }
+
+    [Parameter]
+    public EventCallback AttendancesChanged { get; set; }
 
 
     [CascadingParameter]

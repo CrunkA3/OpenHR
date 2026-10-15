@@ -48,6 +48,9 @@
     [Parameter]
     public bool IsOtherMonth { get; set; } = false;
 
+    [Parameter]
+    public EventCallback AttendancesChanged { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -157,6 +160,7 @@
         }
 
         await DbContext.SaveChangesAsync();
+        await AttendancesChanged.InvokeAsync();
     }
 
     private static IEnumerable<DateOnly> EnumerateDateRange(DateOnly startDate, DateOnly endDate)
