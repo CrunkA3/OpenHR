@@ -48,6 +48,9 @@
     [Parameter]
     public bool IsOtherMonth { get; set; } = false;
 
+    [Parameter]
+    public EventCallback AttendancesChanged { get; set; }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,8 +91,9 @@
         }
         else
         {
-            var attendance = result.Value as Attendance;
-            if (attendance is null) return;
+            var dialogResult = result.Value as NewAttendanceDialogResult;
+            if (dialogResult?.Attendance is null) return;
+            var attendance = dialogResult.Attendance;
 
             if (attendance.ApplicationUserId != currentUserId && !isCoordinator)
             {
@@ -98,33 +102,72 @@
                 return;
             }
 
-            await SaveAttendanceAsync(attendance);
+            await SaveAttendancesAsync(dialogResult);
         }
     }
 
-    private async Task SaveAttendanceAsync(Attendance attendance)
+    private async Task SaveAttendancesAsync(NewAttendanceDialogResult dialogResult)
     {
-        var existingAttendance = await DbContext.Attendances
-            .FirstOrDefaultAsync(a => a.Date == attendance.Date && a.ApplicationUserId == attendance.ApplicationUserId);
+        var attendance = dialogResult.Attendance;
+        var selectedDates = EnumerateDateRange(dialogResult.StartDate, dialogResult.EndDate)
+            .Where(date => dialogResult.SelectedDays.Contains(date.DayOfWeek))
+            .ToList();
 
-        if (existingAttendance is not null)
+        if (selectedDates.Count == 0)
         {
-            existingAttendance.AttendanceTypeKey = attendance.AttendanceTypeKey;
-            DbContext.Entry(existingAttendance).State = EntityState.Modified;
-            var oldAttendance = attendances?.FirstOrDefault(a => a.Date == attendance.Date && a.ApplicationUserId == attendance.ApplicationUserId);
-            oldAttendance?.AttendanceTypeKey = attendance.AttendanceTypeKey;
-            oldAttendance?.AttendanceType = attendanceTypes?.FirstOrDefault(at => at.Key == attendance.AttendanceTypeKey) ?? new AttendanceType();
+            return;
         }
-        else
-        {
-            await DbContext.Attendances.AddAsync(attendance);
-            var user = await UserManager.FindByIdAsync(attendance.ApplicationUserId);
-            if (user is not null) attendance.ApplicationUser = user;
 
-            attendances?.Add(attendance);
+        var existingAttendances = await DbContext.Attendances
+            .Where(a => a.ApplicationUserId == attendance.ApplicationUserId && selectedDates.Contains(a.Date))
+            .ToListAsync();
+        var existingByDate = existingAttendances.ToDictionary(a => a.Date);
+        var selectedAttendanceType = attendanceTypes?.FirstOrDefault(at => at.Key == attendance.AttendanceTypeKey);
+        ApplicationUser? user = null;
+
+        foreach (var date in selectedDates)
+        {
+            if (existingByDate.TryGetValue(date, out var existingAttendance))
+            {
+                existingAttendance.AttendanceTypeKey = attendance.AttendanceTypeKey;
+                DbContext.Entry(existingAttendance).State = EntityState.Modified;
+
+                var oldAttendance = attendances?.FirstOrDefault(a => a.Date == date && a.ApplicationUserId == attendance.ApplicationUserId);
+                if (oldAttendance is not null)
+                {
+                    oldAttendance.AttendanceTypeKey = attendance.AttendanceTypeKey;
+                    oldAttendance.AttendanceType = selectedAttendanceType ?? new AttendanceType();
+                }
+                continue;
+            }
+
+            var newAttendance = new Attendance
+            {
+                Date = date,
+                ApplicationUserId = attendance.ApplicationUserId,
+                AttendanceTypeKey = attendance.AttendanceTypeKey,
+                AttendanceType = selectedAttendanceType ?? new AttendanceType()
+            };
+
+            user ??= await UserManager.FindByIdAsync(attendance.ApplicationUserId);
+            if (user is not null)
+            {
+                newAttendance.ApplicationUser = user;
+            }
+
+            await DbContext.Attendances.AddAsync(newAttendance);
+            attendances?.Add(newAttendance);
         }
 
         await DbContext.SaveChangesAsync();
+        await AttendancesChanged.InvokeAsync();
+    }
 
+    private static IEnumerable<DateOnly> EnumerateDateRange(DateOnly startDate, DateOnly endDate)
+    {
+        for (var date = startDate; date <= endDate; date = date.AddDays(1))
+        {
+            yield return date;
+        }
     }
 }

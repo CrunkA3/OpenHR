@@ -19,7 +19,18 @@
                               Required="true" />
             }
 
-            <FluentDatePicker @bind-Value="Attendance.Date" Label="Datum" Required="true" />
+            <FluentDatePicker @bind-Value="RangeStartDate" Label="Zeitraum von" Required="true" />
+            <FluentDatePicker @bind-Value="RangeEndDate" Label="Zeitraum bis" Required="true" />
+
+            <FluentStack Orientation="Orientation.Vertical">
+                @foreach (var option in WeekdayOptions)
+                {
+                    <FluentCheckbox Value="@option.Selected"
+                                    ValueChanged="@(value => OnWeekdaySelectionChanged(option.DayOfWeek, value))"
+                                    Label="@option.Label" />
+                }
+            </FluentStack>
+
             <FluentSelect @bind-Value="Attendance.AttendanceTypeKey"
                           Items="AttendanceTypes"
                           TValue="Guid" TOption="AttendanceType"
@@ -34,6 +45,50 @@
 
 
 @code {
+    private sealed class WeekdayOption
+    {
+        public required DayOfWeek DayOfWeek { get; init; }
+        public required string Label { get; init; }
+        public bool Selected { get; set; }
+    }
+
+    private static readonly Dictionary<DayOfWeek, string> DayLabels = new()
+    {
+        [DayOfWeek.Monday] = "Montag",
+        [DayOfWeek.Tuesday] = "Dienstag",
+        [DayOfWeek.Wednesday] = "Mittwoch",
+        [DayOfWeek.Thursday] = "Donnerstag",
+        [DayOfWeek.Friday] = "Freitag",
+        [DayOfWeek.Saturday] = "Samstag",
+        [DayOfWeek.Sunday] = "Sonntag"
+    };
+
+    private readonly List<WeekdayOption> WeekdayOptions = DayLabels
+        .Select(day => new WeekdayOption
+        {
+            DayOfWeek = day.Key,
+            Label = day.Value,
+            Selected = day.Key != DayOfWeek.Sunday
+        })
+        .OrderBy(option => option.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)option.DayOfWeek)
+        .ToList();
+
+    private DateOnly rangeStartDate;
+    private DateOnly rangeEndDate;
+    private DateOnly? initializedFromDate;
+
+    private DateOnly RangeStartDate
+    {
+        get => rangeStartDate;
+        set => rangeStartDate = value;
+    }
+
+    private DateOnly RangeEndDate
+    {
+        get => rangeEndDate;
+        set => rangeEndDate = value;
+    }
+
     [Parameter]
     public Attendance? Attendance { get; set; } = default!;
 
@@ -46,8 +101,28 @@
     [Parameter]
     public IEnumerable<ApplicationUser>? Users { get; set; }
 
+    protected override void OnParametersSet()
+    {
+        if (Attendance is null)
+        {
+            return;
+        }
 
- 
+        if (initializedFromDate == Attendance.Date)
+        {
+            return;
+        }
+
+        RangeStartDate = Attendance.Date;
+        RangeEndDate = Attendance.Date;
+        initializedFromDate = Attendance.Date;
+
+        foreach (var option in WeekdayOptions)
+        {
+            option.Selected = option.DayOfWeek != DayOfWeek.Sunday;
+        }
+    }
+
     protected override void OnInitializeDialog(DialogOptionsHeader header, DialogOptionsFooter footer)
     {
         header.Title = "Neue Anwesenheit";
@@ -62,8 +137,39 @@
         }
         else
         {
-            // Handle the save action
-            await DialogInstance.CloseAsync(Attendance);
+            if (Attendance is null)
+            {
+                await DialogInstance.CancelAsync();
+                return;
+            }
+
+            var startDate = RangeStartDate <= RangeEndDate ? RangeStartDate : RangeEndDate;
+            var endDate = RangeStartDate <= RangeEndDate ? RangeEndDate : RangeStartDate;
+
+            var selectedDays = WeekdayOptions
+                .Where(option => option.Selected)
+                .Select(option => option.DayOfWeek)
+                .ToHashSet();
+
+            if (selectedDays.Count == 0)
+            {
+                await DialogInstance.CancelAsync();
+                return;
+            }
+
+            await DialogInstance.CloseAsync(new NewAttendanceDialogResult
+            {
+                Attendance = Attendance,
+                StartDate = startDate,
+                EndDate = endDate,
+                SelectedDays = selectedDays
+            });
         }
+    }
+
+    private void OnWeekdaySelectionChanged(DayOfWeek dayOfWeek, bool selected)
+    {
+        var option = WeekdayOptions.First(weekdayOption => weekdayOption.DayOfWeek == dayOfWeek);
+        option.Selected = selected;
     }
 }
