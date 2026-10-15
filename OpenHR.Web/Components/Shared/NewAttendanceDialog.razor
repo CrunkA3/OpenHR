@@ -21,7 +21,6 @@
 
             <FluentDatePicker @bind-Value="RangeStartDate" Label="Zeitraum von" Required="true" />
             <FluentDatePicker @bind-Value="RangeEndDate" Label="Zeitraum bis" Required="true" />
-            <FluentCheckbox @bind-Value="IncludeSunday" Label="Sonntag berücksichtigen" />
 
             <FluentStack Orientation="Orientation.Vertical">
                 @foreach (var option in WeekdayOptions)
@@ -88,12 +87,6 @@
     {
         get => rangeEndDate;
         set => rangeEndDate = value;
-    }
-
-    private bool IncludeSunday
-    {
-        get => WeekdayOptions.First(option => option.DayOfWeek == DayOfWeek.Sunday).Selected;
-        set => WeekdayOptions.First(option => option.DayOfWeek == DayOfWeek.Sunday).Selected = value;
     }
 
     [Parameter]
