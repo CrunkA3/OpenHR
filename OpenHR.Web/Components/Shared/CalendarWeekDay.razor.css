@@ -4,6 +4,7 @@
     min-width: 0;
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: var(--calendar-day-border-radius);
+    corner-shape: squircle;
     margin: var(--calendar-day-margin);
     padding-right: calc(var(--calendar-day-border-radius)/2);
     padding-left: calc(var(--calendar-day-border-radius)/2);
@@ -62,6 +63,7 @@
     gap: 0.35rem;
     border: 1px solid;
     border-radius: calc(var(--calendar-attendance-height)/2);
+    corner-shape: squircle;
     border-left-width: calc(var(--calendar-attendance-height)/2);
     padding-left: calc(var(--calendar-attendance-height)/4);
 }

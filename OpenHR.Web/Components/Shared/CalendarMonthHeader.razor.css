@@ -16,6 +16,7 @@
     min-width: 0;
     border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: var(--calendar-day-border-radius);
+    corner-shape: squircle;
     margin: var(--calendar-day-margin);
     padding: var(--calendar-day-margin);
     box-sizing: border-box;
