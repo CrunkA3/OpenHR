@@ -1,0 +1,157 @@
+@page "/coordinator/quotas"
+
+@attribute [Authorize(Roles = IdentityDatabaseInitializer.CoordinatorRole)]
+
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+
+<PageTitle>Kontingente</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch">
+    <FluentText As="TextTag.H1">Kontingente @currentYear</FluentText>
+</FluentStack>
+
+@if (items is null)
+{
+    <FluentSkeleton Circular="false" Shimmer="true" Width="100%" Height="200px" />
+}
+else if (items.Count == 0)
+{
+    <FluentText>Für Ihre Organisationseinheiten wurden keine Kontingente gefunden.</FluentText>
+}
+else
+{
+    <FluentDataGrid Items="FilteredItems" RowSize="@DataGridRowSize.Medium">
+        <TemplateColumn Title="Benutzer">
+            @context.UserName
+        </TemplateColumn>
+        <TemplateColumn Title="Organisationseinheiten">
+            @context.OrganisationUnits
+        </TemplateColumn>
+        <TemplateColumn Title="Kontingenttyp">
+            @context.AttendanceTypeName
+        </TemplateColumn>
+        <TemplateColumn Title="Kontingent">
+            @(context.Quota?.ToString() ?? "Nicht festgelegt")
+        </TemplateColumn>
+        <TemplateColumn Title="Verbraucht">
+            @context.Used.ToString("0.##")
+        </TemplateColumn>
+        <TemplateColumn Title="Verbleibend">
+            @(context.Remaining?.ToString("0.##") ?? "–")
+        </TemplateColumn>
+    </FluentDataGrid>
+}
+
+@code {
+    private int currentYear = DateTime.Now.Year;
+    private List<QuotaSummaryRow>? items;
+
+    private IQueryable<QuotaSummaryRow>? FilteredItems => items?.AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var coordinator = await UserManager.GetUserAsync(authenticationState.User);
+        if (coordinator is null)
+        {
+            items = [];
+            return;
+        }
+
+        var organisationUnitKeys = await DbContext.ApplicationUserOrganisationUnits
+            .Where(link => link.ApplicationUserId == coordinator.Id)
+            .Select(link => link.OrganisationUnitKey)
+            .ToListAsync();
+
+        var users = await DbContext.Users
+            .Where(user => user.OrganisationUnitLinks.Any(link => organisationUnitKeys.Contains(link.OrganisationUnitKey)))
+            .Include(user => user.OrganisationUnitLinks)
+            .ThenInclude(link => link.OrganisationUnit)
+            .OrderBy(user => user.Email)
+            .ToListAsync();
+
+        if (users.Count == 0)
+        {
+            items = [];
+            return;
+        }
+
+        var userIds = users.Select(user => user.Id).ToList();
+        var attendanceTypes = await DbContext.AttendanceTypes
+            .Where(type => type.HasQuota == true)
+            .OrderBy(type => type.AttendanceName)
+            .ToListAsync();
+
+        if (attendanceTypes.Count == 0)
+        {
+            items = [];
+            return;
+        }
+
+        var attendanceTypeKeys = attendanceTypes
+            .Where(type => type.Key.HasValue)
+            .Select(type => type.Key!.Value)
+            .ToList();
+        var quotas = (await DbContext.ApplicationUserAttendanceQuotas
+                .Where(quota => userIds.Contains(quota.ApplicationUserId)
+                    && attendanceTypeKeys.Contains(quota.AttendanceTypeKey)
+                    && quota.ValidFromYear <= currentYear)
+                .OrderByDescending(quota => quota.ValidFromYear)
+                .ToListAsync())
+            .DistinctBy(quota => new { quota.ApplicationUserId, quota.AttendanceTypeKey })
+            .ToDictionary(quota => (quota.ApplicationUserId, quota.AttendanceTypeKey));
+
+        var yearStart = new DateOnly(currentYear, 1, 1);
+        var yearEnd = new DateOnly(currentYear, 12, 31);
+        var usage = (await DbContext.Attendances
+                .Where(attendance => userIds.Contains(attendance.ApplicationUserId)
+                    && attendanceTypeKeys.Contains(attendance.AttendanceTypeKey)
+                    && attendance.Date >= yearStart
+                    && attendance.Date <= yearEnd)
+                .GroupBy(attendance => new { attendance.ApplicationUserId, attendance.AttendanceTypeKey })
+                .Select(group => new
+                {
+                    group.Key.ApplicationUserId,
+                    group.Key.AttendanceTypeKey,
+                    Amount = group.Sum(attendance => attendance.Amount)
+                })
+                .ToListAsync())
+            .ToDictionary(entry => (entry.ApplicationUserId, entry.AttendanceTypeKey), entry => entry.Amount);
+
+        var scopedOrganisationUnitKeys = organisationUnitKeys.ToHashSet();
+        items = users
+            .SelectMany(user => attendanceTypes.Select(type =>
+            {
+                quotas.TryGetValue((user.Id, type.Key!.Value), out var quota);
+                usage.TryGetValue((user.Id, type.Key.Value), out var used);
+                decimal? remaining = quota is null ? null : quota.Quota - used;
+                var userOrganisationUnits = string.Join(", ", user.OrganisationUnitLinks
+                    .Where(link => scopedOrganisationUnitKeys.Contains(link.OrganisationUnitKey))
+                    .Select(link => link.OrganisationUnit.OrganisationUnitName)
+                    .Where(name => !string.IsNullOrWhiteSpace(name)));
+
+                return new QuotaSummaryRow(
+                    user.ShortName ?? user.Email ?? user.UserName ?? string.Empty,
+                    userOrganisationUnits,
+                    type.AttendanceName ?? string.Empty,
+                    quota?.Quota,
+                    used,
+                    remaining);
+            }))
+            .ToList();
+    }
+
+    private sealed record QuotaSummaryRow(
+        string UserName,
+        string OrganisationUnits,
+        string AttendanceTypeName,
+        int? Quota,
+        decimal Used,
+        decimal? Remaining);
+}
