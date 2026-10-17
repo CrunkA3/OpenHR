@@ -19,8 +19,9 @@
                               Required="true" />
             }
 
-            <FluentDatePicker @bind-Value="RangeStartDate" Label="Zeitraum von" Required="true" />
-            <FluentDatePicker @bind-Value="RangeEndDate" Label="Zeitraum bis" Required="true" />
+            <FluentCalendar TValue="DateOnly"
+                            SelectMode="CalendarSelectMode.Range"
+                            @bind-SelectedDates="SelectedRangeDates" />
 
             <FluentStack Orientation="Orientation.Vertical">
                 @foreach (var option in WeekdayOptions)
@@ -73,20 +74,16 @@
         .OrderBy(option => option.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)option.DayOfWeek)
         .ToList();
 
-    private DateOnly rangeStartDate;
-    private DateOnly rangeEndDate;
+    private IEnumerable<DateOnly> selectedRangeDates = [];
     private DateOnly? initializedFromDate;
 
-    private DateOnly RangeStartDate
+    private IEnumerable<DateOnly> SelectedRangeDates
     {
-        get => rangeStartDate;
-        set => rangeStartDate = value;
-    }
-
-    private DateOnly RangeEndDate
-    {
-        get => rangeEndDate;
-        set => rangeEndDate = value;
+        get => selectedRangeDates;
+        set => selectedRangeDates = (value ?? [])
+            .Distinct()
+            .OrderBy(date => date)
+            .ToList();
     }
 
     [Parameter]
@@ -113,8 +110,7 @@
             return;
         }
 
-        RangeStartDate = Attendance.Date;
-        RangeEndDate = Attendance.Date;
+        SelectedRangeDates = [Attendance.Date];
         initializedFromDate = Attendance.Date;
 
         foreach (var option in WeekdayOptions)
@@ -143,8 +139,15 @@
                 return;
             }
 
-            var startDate = RangeStartDate <= RangeEndDate ? RangeStartDate : RangeEndDate;
-            var endDate = RangeStartDate <= RangeEndDate ? RangeEndDate : RangeStartDate;
+            var selectedDates = SelectedRangeDates.ToList();
+            if (selectedDates.Count == 0)
+            {
+                await DialogInstance.CancelAsync();
+                return;
+            }
+
+            var startDate = selectedDates.First();
+            var endDate = selectedDates.Last();
 
             var selectedDays = WeekdayOptions
                 .Where(option => option.Selected)
