@@ -137,7 +137,7 @@ else
                     .Where(name => !string.IsNullOrWhiteSpace(name)));
 
                 return new QuotaSummaryRow(
-                    user.ShortName ?? user.Email ?? user.UserName ?? string.Empty,
+                    string.IsNullOrWhiteSpace(user.ShortName) ? user.Email ?? user.UserName ?? string.Empty : user.ShortName,
                     userOrganisationUnits,
                     type.AttendanceName ?? string.Empty,
                     quota?.Quota,
