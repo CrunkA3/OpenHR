@@ -15,6 +15,11 @@
             </FluentNavCategory>
         </Authorized>
     </AuthorizeView>
+    <AuthorizeView Roles="Coordinator">
+        <Authorized>
+            <FluentNavItem Href="/coordinator/quotas" IconRest="@(new Icons.Regular.Size20.Organization())" IconActive="@(new Icons.Filled.Size20.Organization())">Kontingente</FluentNavItem>
+        </Authorized>
+    </AuthorizeView>
     <AuthorizeView>
         <Authorized>
             <FluentNavItem href="Account/Manage" IconRest="@(new Icons.Regular.Size20.Person())" IconActive="@(new Icons.Filled.Size20.Person())">
