@@ -147,11 +147,19 @@ else
             .ToList();
     }
 
-    private sealed record QuotaSummaryRow(
-        string UserName,
-        string OrganisationUnits,
-        string AttendanceTypeName,
-        int? Quota,
-        decimal Used,
-        decimal? Remaining);
+    private sealed class QuotaSummaryRow(
+        string userName,
+        string organisationUnits,
+        string attendanceTypeName,
+        int? quota,
+        decimal used,
+        decimal? remaining)
+    {
+        public string UserName { get; } = userName;
+        public string OrganisationUnits { get; } = organisationUnits;
+        public string AttendanceTypeName { get; } = attendanceTypeName;
+        public int? Quota { get; } = quota;
+        public decimal Used { get; } = used;
+        public decimal? Remaining { get; } = remaining;
+    }
 }
