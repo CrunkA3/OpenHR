@@ -135,7 +135,7 @@ else
                 {
                     group.Key.ApplicationUserId,
                     group.Key.AttendanceTypeKey,
-                    Amount = group.Sum(attendance => (int)attendance.Amount)
+                    Amount = (int)group.Sum(attendance => attendance.Amount)
                 })
                 .ToListAsync())
             .ToDictionary(entry => (entry.ApplicationUserId, entry.AttendanceTypeKey), entry => entry.Amount);
