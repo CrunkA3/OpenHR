@@ -76,7 +76,8 @@
                             options.Size = DialogSize.Large;
                             options.Alignment = DialogAlignment.Default;
 
-                            options.Parameters.Add(nameof(NewAttendanceDialog.Attendance), new Attendance { Date = Date, ApplicationUserId = currentUserId });
+                            options.Parameters.Add(nameof(NewAttendanceDialog.InitialDate), Date);
+                            options.Parameters.Add(nameof(NewAttendanceDialog.ApplicationUserId), currentUserId);
                             options.Parameters.Add(nameof(NewAttendanceDialog.AttendanceTypes), attendanceTypes);
                             options.Parameters.Add(nameof(NewAttendanceDialog.IsCoordinator), isCoordinator);
                             options.Parameters.Add(nameof(NewAttendanceDialog.Users), users);
@@ -91,14 +92,12 @@
         }
         else
         {
-            var dialogResult = result.Value as NewAttendanceDialogResult;
-            if (dialogResult?.Attendance is null) return;
-            var attendance = dialogResult.Attendance;
+            var dialogResult = result.Value as NewAttendanceDialogResult ?? throw new InvalidOperationException("Dialog result is not of the expected type.");
 
-            if (attendance.ApplicationUserId != currentUserId && !isCoordinator)
+            if (dialogResult.ApplicationUserId != currentUserId && !isCoordinator)
             {
                 // User is trying to add attendance for another user without being a coordinator
-                Logger.LogCritical("Unauthorized attempt to add attendance for another user. UserId: {UserId}, AttemptedUserId: {AttemptedUserId}", currentUserId, attendance.ApplicationUserId);
+                Logger.LogCritical("Unauthorized attempt to add attendance for another user. UserId: {UserId}, AttemptedUserId: {AttemptedUserId}", currentUserId, dialogResult.ApplicationUserId);
                 return;
             }
 
@@ -108,10 +107,7 @@
 
     private async Task SaveAttendancesAsync(NewAttendanceDialogResult dialogResult)
     {
-        var attendance = dialogResult.Attendance;
-        var selectedDates = EnumerateDateRange(dialogResult.StartDate, dialogResult.EndDate)
-            .Where(date => dialogResult.SelectedDays.Contains(date.DayOfWeek))
-            .ToList();
+        var selectedDates = dialogResult.SelectedRangeDates.ToList();
 
         if (selectedDates.Count == 0)
         {
@@ -119,23 +115,23 @@
         }
 
         var existingAttendances = await DbContext.Attendances
-            .Where(a => a.ApplicationUserId == attendance.ApplicationUserId && selectedDates.Contains(a.Date))
+            .Where(a => a.ApplicationUserId == dialogResult.ApplicationUserId && selectedDates.Contains(a.Date))
             .ToListAsync();
         var existingByDate = existingAttendances.ToDictionary(a => a.Date);
-        var selectedAttendanceType = attendanceTypes?.FirstOrDefault(at => at.Key == attendance.AttendanceTypeKey);
+        var selectedAttendanceType = attendanceTypes?.FirstOrDefault(at => at.Key == dialogResult.AttendanceTypeKey);
         ApplicationUser? user = null;
 
         foreach (var date in selectedDates)
         {
             if (existingByDate.TryGetValue(date, out var existingAttendance))
             {
-                existingAttendance.AttendanceTypeKey = attendance.AttendanceTypeKey;
+                existingAttendance.AttendanceTypeKey = dialogResult.AttendanceTypeKey;
                 DbContext.Entry(existingAttendance).State = EntityState.Modified;
 
-                var oldAttendance = attendances?.FirstOrDefault(a => a.Date == date && a.ApplicationUserId == attendance.ApplicationUserId);
+                var oldAttendance = attendances?.FirstOrDefault(a => a.Date == date && a.ApplicationUserId == dialogResult.ApplicationUserId);
                 if (oldAttendance is not null)
                 {
-                    oldAttendance.AttendanceTypeKey = attendance.AttendanceTypeKey;
+                    oldAttendance.AttendanceTypeKey = dialogResult.AttendanceTypeKey;
                     oldAttendance.AttendanceType = selectedAttendanceType ?? new AttendanceType();
                 }
                 continue;
@@ -144,12 +140,12 @@
             var newAttendance = new Attendance
             {
                 Date = date,
-                ApplicationUserId = attendance.ApplicationUserId,
-                AttendanceTypeKey = attendance.AttendanceTypeKey,
+                ApplicationUserId = dialogResult.ApplicationUserId,
+                AttendanceTypeKey = dialogResult.AttendanceTypeKey,
                 AttendanceType = selectedAttendanceType ?? new AttendanceType()
             };
 
-            user ??= await UserManager.FindByIdAsync(attendance.ApplicationUserId);
+            user ??= await UserManager.FindByIdAsync(dialogResult.ApplicationUserId);
             if (user is not null)
             {
                 newAttendance.ApplicationUser = user;

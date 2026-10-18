@@ -26,8 +26,8 @@
     private DateTime viewDate = DateTime.Today;
     private DateTime viewMonth => viewDate.StartOfMonth(CultureInfo.CurrentCulture);
     private DateTime viewStartDate => viewMonth.StartOfWeek(CultureInfo.CurrentCulture);
-    private DateTime viewEndDate => viewMonth.AddMonths(1).AddDays(-1).StartOfWeek(CultureInfo.CurrentCulture);
-    private int viewWeekCount => (int)(viewEndDate - viewStartDate).TotalDays / 7 + 1;
+    private DateTime viewEndDate => viewMonth.AddMonths(1).AddDays(-1).StartOfWeek(CultureInfo.CurrentCulture).AddDays(6);
+    private int viewWeekCount => (int)((viewEndDate - viewStartDate).TotalDays - 6) / 7 + 1;
 
 
     private List<AttendanceType>? attendanceTypes { get; set; }
