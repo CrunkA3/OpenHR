@@ -8,7 +8,7 @@
 
 @inject ILogger<CalendarWeekDay> Logger
 
-<div class="day @(IsOtherMonth ? "other-month" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)" @onclick="HandleDayClickAsync">
+<div class="day @(IsOtherMonth ? "other-month" : "") @(IsToday ? "today" : "") @Date.ToString("dddd", CultureInfo.InvariantCulture)" @onclick="HandleDayClickAsync">
     <div class="date-short">@Date.ToString("dd", CultureInfo.CurrentCulture)</div>
     <div class="date-long">@Date.ToString("D", CultureInfo.CurrentCulture)</div>
 
@@ -50,6 +50,8 @@
 
     [Parameter]
     public EventCallback AttendancesChanged { get; set; }
+
+    private bool IsToday => Date == DateOnly.FromDateTime(DateTime.Today);
 
 
     protected override async Task OnInitializedAsync()
