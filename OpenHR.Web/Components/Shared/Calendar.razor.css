@@ -5,6 +5,40 @@
     height: calc(var(--layout-body-height) - var(--content-padding-top) - var(--content-padding-bottom));
     display: flex;
     flex-direction: column;
+    gap: 0.35rem;
     scroll-snap-type: y mandatory;
     overflow-y: auto;
+}
+
+.calendar-toolbar {
+    flex: 0.1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-inline: var(--calendar-day-margin);
+}
+
+.calendar-toolbar-navigation {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.calendar-toolbar-title {
+    margin: 0;
+    font-weight: 700;
+}
+
+@media(max-width: 960px) {
+    .calendar-toolbar {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .calendar-toolbar-title {
+        width: 100%;
+        order: -1;
+    }
 }
