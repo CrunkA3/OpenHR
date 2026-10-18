@@ -201,3 +201,43 @@ code {
         right: unset;
     }
 }
+
+/* Modern navigation menu: subtle gradient background with glass-effect items */
+#main-menu {
+    height: 100%;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    background:
+        radial-gradient(circle at 0% 0%, color-mix(in srgb, var(--accent-fill-rest) 14%, transparent), transparent 60%),
+        linear-gradient(180deg, var(--neutral-layer-2), var(--neutral-layer-3));
+    border-right: 1px solid color-mix(in srgb, var(--neutral-foreground-rest) 8%, transparent);
+}
+
+#main-menu fluent-nav-item,
+#main-menu fluent-nav-category,
+#main-menu fluent-button {
+    --nav-item-radius: 0.5rem;
+}
+
+#main-menu fluent-nav-item,
+#main-menu .fluent-nav-item,
+#main-menu a {
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--neutral-layer-1) 35%, transparent);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid color-mix(in srgb, var(--neutral-foreground-rest) 8%, transparent);
+    margin-bottom: 0.25rem;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+#main-menu fluent-nav-item:hover,
+#main-menu .fluent-nav-item:hover,
+#main-menu a:hover {
+    background: color-mix(in srgb, var(--accent-fill-rest) 16%, transparent);
+    border-color: color-mix(in srgb, var(--accent-fill-rest) 40%, transparent);
+}
+
+#main-menu fluent-button {
+    margin-top: 0.5rem;
+}
