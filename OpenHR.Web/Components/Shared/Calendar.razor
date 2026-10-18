@@ -8,7 +8,25 @@
 <div class="calendar">
     <CascadingValue Value="attendanceTypes">
         <CascadingValue Value="attendances">
-            <FluentText As="TextTag.H1" Style="flex: 0.1;">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
+            <div class="calendar-toolbar">
+                <div class="calendar-toolbar-navigation">
+                    <FluentButton Type="ButtonType.Button"
+                                  OnClick="PreviousMonthAsync"
+                                  IconStart="@(new Icons.Regular.Size20.ChevronLeft())"
+                                  aria-label="vorheriger Monat" />
+                    <FluentButton Type="ButtonType.Button"
+                                  OnClick="NextMonthAsync"
+                                  IconStart="@(new Icons.Regular.Size20.ChevronRight())"
+                                  aria-label="nächster Monat" />
+                    <FluentButton Type="ButtonType.Button"
+                                  Appearance="ButtonAppearance.Primary"
+                                  OnClick="GoToTodayAsync">
+                        Heute
+                    </FluentButton>
+                </div>
+
+                <FluentText As="TextTag.H2" Class="calendar-toolbar-title">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
+            </div>
 
             <CalendarMonthHeader />
 
@@ -62,6 +80,30 @@
             .Include(a => a.ApplicationUser)
             .ToListAsync()
         );
+    }
+
+    private async Task PreviousMonthAsync() => await SetViewDateAsync(viewDate.AddMonths(-1));
+
+    private async Task NextMonthAsync() => await SetViewDateAsync(viewDate.AddMonths(1));
+
+    private async Task GoToTodayAsync() => await SetViewDateAsync(DateTime.Today);
+
+    private bool isChangingMonth;
+
+    private async Task SetViewDateAsync(DateTime date)
+    {
+        if (isChangingMonth) return;
+
+        isChangingMonth = true;
+        try
+        {
+            viewDate = date;
+            await LoadAttendancesAsync();
+        }
+        finally
+        {
+            isChangingMonth = false;
+        }
     }
 
     private Task RefreshCalendarAsync() => InvokeAsync(StateHasChanged);
