@@ -8,21 +8,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BlazorCalendar" Version="3.2.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
 		<ProjectReference Include="..\OpenHR.ServiceDefaults\OpenHR.ServiceDefaults.csproj" />
-		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.0" />
-		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.0" />
+		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="5.0.1" />
+		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="5.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.5.4" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.12" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+		<PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.6.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.13" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.13" />
 	</ItemGroup>
 
 	<ItemGroup>
