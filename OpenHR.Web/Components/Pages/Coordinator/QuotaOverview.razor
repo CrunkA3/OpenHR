@@ -16,7 +16,7 @@
     <FluentText As="TextTag.H1">Kontingente @currentYear</FluentText>
 </FluentStack>
 
-@if (items is null)
+@if (items is null || FilteredItems is null)
 {
     <FluentSkeleton Circular="false" Shimmer="true" Width="100%" Height="200px" />
 }
@@ -24,35 +24,47 @@ else if (items.Count == 0)
 {
     <FluentText>Für Ihre Organisationseinheiten wurden keine Kontingente gefunden.</FluentText>
 }
+else if (!FilteredItems.Any())
+{
+    <FluentText>Keine Einträge gefunden.</FluentText>
+}
 else
 {
-    <FluentDataGrid Items="FilteredItems" RowSize="@DataGridRowSize.Medium">
-        <TemplateColumn Title="Benutzer">
-            @context.UserName
-        </TemplateColumn>
-        <TemplateColumn Title="Organisationseinheiten">
-            @context.OrganisationUnits
-        </TemplateColumn>
-        <TemplateColumn Title="Kontingenttyp">
-            @context.AttendanceTypeName
-        </TemplateColumn>
-        <TemplateColumn Title="Kontingent">
-            @(context.Quota?.ToString() ?? "Nicht festgelegt")
-        </TemplateColumn>
-        <TemplateColumn Title="Verbraucht">
-            @context.Used.ToString("0.##")
-        </TemplateColumn>
-        <TemplateColumn Title="Verbleibend">
-            @(context.Remaining?.ToString("0.##") ?? "–")
-        </TemplateColumn>
-    </FluentDataGrid>
+    <FluentGrid Spacing="3">
+        @foreach (var item in FilteredItems)
+        {
+            <FluentGridItem Xs="12" Sm="6" Md="4" Lg="3">
+                <FluentCard>
+                    <FluentStack Orientation="Orientation.Vertical" HorizontalAlignment="HorizontalAlignment.Stretch" VerticalGap="10">
+                        <FluentText As="TextTag.H2">@item.UserName</FluentText>
+
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="3">
+                            @foreach (var orgUnit in item.OrganisationUnits)
+                            {
+                                <FluentBadge Content="@orgUnit" />
+                            }
+                        </FluentStack>
+
+                        @foreach (var quota in item.Quotas)
+                        {
+                            <FluentField Message="@quota.AttendanceTypeName" />
+                            <FluentProgressBar Min="0" Max="@quota.Quota" Value="@quota.Used" Width="100%" Thickness="ProgressThickness.Large" />
+                        }
+
+                    </FluentStack>
+                </FluentCard>
+            </FluentGridItem>
+        }
+
+    </FluentGrid>
+
 }
 
 @code {
     private int currentYear = DateTime.Now.Year;
-    private List<QuotaSummaryRow>? items;
+    private List<UserRow>? items;
 
-    private IQueryable<QuotaSummaryRow>? FilteredItems => items?.AsQueryable();
+    private IQueryable<UserRow>? FilteredItems => items?.AsQueryable();
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,47 +131,61 @@ else
                 {
                     group.Key.ApplicationUserId,
                     group.Key.AttendanceTypeKey,
-                    Amount = group.Sum(attendance => attendance.Amount)
+                    Amount = group.Sum(attendance => (int)attendance.Amount)
                 })
                 .ToListAsync())
             .ToDictionary(entry => (entry.ApplicationUserId, entry.AttendanceTypeKey), entry => entry.Amount);
 
         var scopedOrganisationUnitKeys = organisationUnitKeys.ToHashSet();
         items = users
-            .SelectMany(user => attendanceTypes.Select(type =>
+            .Select(user =>
             {
-                quotas.TryGetValue((user.Id, type.Key!.Value), out var quota);
-                usage.TryGetValue((user.Id, type.Key.Value), out var used);
-                decimal? remaining = quota is null ? null : quota.Quota - used;
-                var userOrganisationUnits = string.Join(", ", user.OrganisationUnitLinks
-                    .Where(link => scopedOrganisationUnitKeys.Contains(link.OrganisationUnitKey))
-                    .Select(link => link.OrganisationUnit.OrganisationUnitName)
-                    .Where(name => !string.IsNullOrWhiteSpace(name)));
+                var userOrganisationUnits = user.OrganisationUnitLinks
+                                                    .Where(link => scopedOrganisationUnitKeys.Contains(link.OrganisationUnitKey))
+                                                    .Where(link => !string.IsNullOrWhiteSpace(link.OrganisationUnit.OrganisationUnitName))
+                                                    .Select(link => link.OrganisationUnit.OrganisationUnitName!)
+                                                    .ToArray();
 
-                return new QuotaSummaryRow(
+                return new UserRow(
                     string.IsNullOrWhiteSpace(user.ShortName) ? user.Email ?? user.UserName ?? string.Empty : user.ShortName,
                     userOrganisationUnits,
-                    type.AttendanceName ?? string.Empty,
-                    quota?.Quota,
-                    used,
-                    remaining);
-            }))
+                    attendanceTypes.Select(type =>
+                        {
+                            quotas.TryGetValue((user.Id, type.Key!.Value), out var quota);
+                            usage.TryGetValue((user.Id, type.Key.Value), out var used);
+                            int? remaining = quota is null ? null : quota.Quota - used;
+
+                            return new QuotaSummaryRow(
+                                type.AttendanceName ?? string.Empty,
+                                quota?.Quota,
+                                used,
+                                remaining);
+                        }
+                ).ToArray());
+            })
             .ToList();
     }
 
-    private sealed class QuotaSummaryRow(
+
+    private sealed class UserRow(
         string userName,
-        string organisationUnits,
-        string attendanceTypeName,
-        int? quota,
-        decimal used,
-        decimal? remaining)
+        string[] organisationUnits,
+        QuotaSummaryRow[] quotas)
     {
         public string UserName { get; } = userName;
-        public string OrganisationUnits { get; } = organisationUnits;
+        public string[] OrganisationUnits { get; } = organisationUnits;
+        public QuotaSummaryRow[] Quotas { get; } = quotas;
+    }
+
+    private sealed class QuotaSummaryRow(
+        string attendanceTypeName,
+        int? quota,
+        int used,
+        int? remaining)
+    {
         public string AttendanceTypeName { get; } = attendanceTypeName;
         public int? Quota { get; } = quota;
-        public decimal Used { get; } = used;
-        public decimal? Remaining { get; } = remaining;
+        public int Used { get; } = used;
+        public int? Remaining { get; } = remaining;
     }
 }
