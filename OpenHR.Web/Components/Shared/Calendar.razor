@@ -88,10 +88,22 @@
 
     private async Task GoToTodayAsync() => await SetViewDateAsync(DateTime.Today);
 
+    private bool isChangingMonth;
+
     private async Task SetViewDateAsync(DateTime date)
     {
-        viewDate = date;
-        await LoadAttendancesAsync();
+        if (isChangingMonth) return;
+
+        isChangingMonth = true;
+        try
+        {
+            viewDate = date;
+            await LoadAttendancesAsync();
+        }
+        finally
+        {
+            isChangingMonth = false;
+        }
     }
 
     private Task RefreshCalendarAsync() => InvokeAsync(StateHasChanged);
