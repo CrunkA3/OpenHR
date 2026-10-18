@@ -6,11 +6,11 @@
 <FluentDialogBody>
 
     <FluentStack Orientation="Orientation.Vertical">
-        @if (Attendance is not null)
+        @if (ApplicationUserId is not null)
         {
             if (IsCoordinator && Users is not null)
             {
-                <FluentSelect @bind-Value="Attendance.ApplicationUserId"
+                <FluentSelect @bind-Value="ApplicationUserId"
                               Items="Users"
                               TValue="string" TOption="ApplicationUser"
                               OptionText="@(item => item.ShortName ?? item.UserName)"
@@ -21,7 +21,8 @@
 
             <FluentCalendar TValue="DateOnly"
                             SelectMode="CalendarSelectMode.Range"
-                            @bind-SelectedDates="SelectedRangeDates" />
+                            @bind-SelectedDates="selectedRangeDates"
+                            DisabledDateFunc="DisabledDay" />
 
             <FluentStack Orientation="Orientation.Vertical">
                 @foreach (var option in WeekdayOptions)
@@ -32,9 +33,9 @@
                 }
             </FluentStack>
 
-            <FluentSelect @bind-Value="Attendance.AttendanceTypeKey"
+            <FluentSelect @bind-Value="AttendanceTypeKey"
                           Items="AttendanceTypes"
-                          TValue="Guid" TOption="AttendanceType"
+                          TValue="Guid?" TOption="AttendanceType"
                           OptionText="@(item => item.AttendanceName)"
                           OptionValue="@(item => item.Key!.Value)"
                           Label="Anwesenheitstyp"
@@ -77,17 +78,14 @@
     private IEnumerable<DateOnly> selectedRangeDates = [];
     private DateOnly? initializedFromDate;
 
-    private IEnumerable<DateOnly> SelectedRangeDates
-    {
-        get => selectedRangeDates;
-        set => selectedRangeDates = (value ?? [])
-            .Distinct()
-            .OrderBy(date => date)
-            .ToList();
-    }
 
     [Parameter]
-    public Attendance? Attendance { get; set; } = default!;
+    public string? ApplicationUserId { get; set; } = default!;
+
+    public Guid? AttendanceTypeKey { get; set; } = default!;
+
+    [Parameter]
+    public DateOnly? InitialDate { get; set; } = default!;
 
     [Parameter]
     public List<AttendanceType>? AttendanceTypes { get; set; }
@@ -100,18 +98,18 @@
 
     protected override void OnParametersSet()
     {
-        if (Attendance is null)
+        if (ApplicationUserId is null)
         {
             return;
         }
 
-        if (initializedFromDate == Attendance.Date)
+        if (initializedFromDate == InitialDate)
         {
             return;
         }
 
-        SelectedRangeDates = [Attendance.Date];
-        initializedFromDate = Attendance.Date;
+        selectedRangeDates = [InitialDate ?? DateOnly.FromDateTime(DateTime.Now)];
+        initializedFromDate = InitialDate;
 
         foreach (var option in WeekdayOptions)
         {
@@ -133,28 +131,21 @@
         }
         else
         {
-            if (Attendance is null)
+            if (ApplicationUserId is null || AttendanceTypeKey is null || !selectedRangeDates.Any())
             {
                 await DialogInstance.CancelAsync();
                 return;
             }
 
-            var selectedDates = SelectedRangeDates.ToList();
+            var selectedDates = selectedRangeDates.ToList();
             if (selectedDates.Count == 0)
             {
                 await DialogInstance.CancelAsync();
                 return;
             }
 
-            var startDate = selectedDates.First();
-            var endDate = selectedDates.Last();
 
-            var selectedDays = WeekdayOptions
-                .Where(option => option.Selected)
-                .Select(option => option.DayOfWeek)
-                .ToHashSet();
-
-            if (selectedDays.Count == 0)
+            if (!selectedRangeDates.Any())
             {
                 await DialogInstance.CancelAsync();
                 return;
@@ -162,13 +153,14 @@
 
             await DialogInstance.CloseAsync(new NewAttendanceDialogResult
             {
-                Attendance = Attendance,
-                StartDate = startDate,
-                EndDate = endDate,
-                SelectedDays = selectedDays
+                ApplicationUserId = ApplicationUserId,
+                AttendanceTypeKey = AttendanceTypeKey.Value,
+                SelectedRangeDates = selectedRangeDates
             });
         }
     }
+
+    private bool DisabledDay(DateOnly date) => !WeekdayOptions.First(option => option.DayOfWeek == date.DayOfWeek).Selected;
 
     private void OnWeekdaySelectionChanged(DayOfWeek dayOfWeek, bool selected)
     {
