@@ -48,7 +48,11 @@ else
                         @foreach (var quota in item.Quotas)
                         {
                             <FluentField Message="@quota.AttendanceTypeName" />
-                            <FluentProgressBar Min="0" Max="@quota.Quota" Value="@quota.Used" Width="100%" Thickness="ProgressThickness.Large" />
+                            <FluentText>Kontingent: @(quota.Quota?.ToString() ?? "Nicht festgelegt") · Verbraucht: @quota.Used.ToString("0.##") · Verbleibend: @(quota.Remaining?.ToString("0.##") ?? "–")</FluentText>
+                            @if (quota.Quota is > 0)
+                            {
+                                <FluentProgressBar Min="0" Max="@quota.Quota" Value="@quota.Used" Width="100%" Thickness="ProgressThickness.Large" />
+                            }
                         }
 
                     </FluentStack>
