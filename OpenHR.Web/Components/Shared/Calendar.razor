@@ -12,18 +12,16 @@
                 <div class="calendar-toolbar-navigation">
                     <FluentButton Type="ButtonType.Button"
                                   OnClick="PreviousMonthAsync"
-                                  AriaLabel="Previous month">
-                        ‹
-                    </FluentButton>
+                                  IconStart="@(new Icons.Regular.Size20.ChevronLeft())"
+                                  aria-label="vorheriger Monat" />
                     <FluentButton Type="ButtonType.Button"
                                   OnClick="NextMonthAsync"
-                                  AriaLabel="Next month">
-                        ›
-                    </FluentButton>
+                                  IconStart="@(new Icons.Regular.Size20.ChevronRight())"
+                                  aria-label="nächster Monat" />
                     <FluentButton Type="ButtonType.Button"
                                   Appearance="ButtonAppearance.Primary"
                                   OnClick="GoToTodayAsync">
-                        Today
+                        Heute
                     </FluentButton>
                 </div>
 
