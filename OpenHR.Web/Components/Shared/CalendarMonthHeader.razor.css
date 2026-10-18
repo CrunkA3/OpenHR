@@ -14,19 +14,17 @@
 .month-header-day {
     flex: 1;
     min-width: 0;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: var(--calendar-day-border-radius);
-    corner-shape: squircle;
-    margin: var(--calendar-day-margin);
-    padding: var(--calendar-day-margin);
+    border: 1px solid color-mix(in srgb, var(--colorNeutralStroke1) 50%, transparent);
+    border-radius: 12px;
+    margin: 0.5rem;
+    padding: 0.5rem;
     box-sizing: border-box;
     overflow: clip;
-    box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground) 37%, transparent) inset;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background-color: var(--colorNeutralBackground1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08), 0 8px 20px rgba(15, 23, 42, 0.06);
     text-align: center;
     font-weight: 800;
-    color: var(--colorBrandForeground1)
+    color: var(--colorBrandForeground1, var(--colorNeutralForeground1))
 }
 
 

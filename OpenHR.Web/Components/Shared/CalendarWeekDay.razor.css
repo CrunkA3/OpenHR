@@ -2,28 +2,35 @@
 .day {
     flex: 1;
     min-width: 0;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: var(--calendar-day-border-radius);
-    corner-shape: squircle;
-    margin: var(--calendar-day-margin);
+    border: 1px solid color-mix(in srgb, var(--colorNeutralStroke1) 50%, transparent);
+    border-radius: 12px;
+    margin: 0.5rem;
     padding-right: calc(var(--calendar-day-border-radius)/2);
     padding-left: calc(var(--calendar-day-border-radius)/2);
     overflow: auto;
-    box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground) 37%, transparent) inset;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background-color: var(--colorNeutralBackground1);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08), 0 8px 20px rgba(15, 23, 42, 0.06);
     text-align: right;
     font-weight: 800;
-    color: var(--colorBrandForeground1);
+    color: var(--colorBrandForeground1, var(--colorNeutralForeground1));
     scroll-snap-align: start;
+    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
     .day:hover {
         background-color: var(--colorNeutralBackground1Hover);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.1), 0 14px 24px rgba(15, 23, 42, 0.08);
     }
 
     .day.other-month {
-        box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--colorBrandBackground2) 37%, transparent);
+        background-color: var(--colorNeutralBackground2);
+        color: var(--colorNeutralForeground3);
+    }
+
+    .day.today {
+        background-color: color-mix(in srgb, var(--colorBrandBackground2) 22%, var(--colorNeutralBackground1));
+        border-color: color-mix(in srgb, var(--colorBrandStroke1) 60%, transparent);
     }
 
     .day.Sunday {
