@@ -2,6 +2,10 @@
 .month-header {
     flex: 0.1;
     display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--colorNeutralBackground1);
 }
 
 @media(max-width: 960px) {

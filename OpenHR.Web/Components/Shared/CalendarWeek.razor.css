@@ -1,15 +1,15 @@
 /* CSS for CalendarWeek component */
 .week {
     flex: 1;
-    min-height: 0;
     display: flex;
     flex-direction: row;
     scroll-snap-align: start;
+    min-height: min(calc(var(--calendar-day-min-height) + var(--calendar-day-margin)), 100%);
 }
 
 @media(max-width: 960px) {
     .week {
         flex-direction: column;
-        min-height: calc((var(--calendar-small-day-min-height)+var(--calendar-day-margin);)*7);
+        min-height: calc((var(--calendar-small-day-min-height) + var(--calendar-day-margin);) * 7);
     }
 }

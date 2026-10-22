@@ -28,14 +28,15 @@
                 <FluentText As="TextTag.H2" Class="calendar-toolbar-title">@viewMonth.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</FluentText>
             </div>
 
-            <CalendarMonthHeader />
-
-            @for (int i = 0; i < viewWeekCount; i++)
-            {
-                <CalendarWeek StartDate="@DateOnly.FromDateTime(viewStartDate.AddDays(i * 7))"
-                              ViewMonth="@DateOnly.FromDateTime(viewMonth)"
-                              AttendancesChanged="RefreshCalendarAsync" />
-            }
+            <div class="calendar-body">
+                <CalendarMonthHeader />
+                @for (int i = 0; i < viewWeekCount; i++)
+                {
+                    <CalendarWeek StartDate="@DateOnly.FromDateTime(viewStartDate.AddDays(i * 7))"
+                                  ViewMonth="@DateOnly.FromDateTime(viewMonth)"
+                                  AttendancesChanged="RefreshCalendarAsync" />
+                }
+            </div>
         </CascadingValue>
     </CascadingValue>
 </div>
