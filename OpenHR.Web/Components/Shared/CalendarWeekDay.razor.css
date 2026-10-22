@@ -1,10 +1,12 @@
 /* CSS for CalendarWeekDay component */
 .day {
+    position: relative;
     flex: 1;
     min-width: 0;
     border: 1px solid color-mix(in srgb, var(--colorNeutralStroke1) 50%, transparent);
     border-radius: 12px;
     margin: 0.5rem;
+    padding-top: 1.75rem;
     padding-right: calc(var(--calendar-day-border-radius)/2);
     padding-left: calc(var(--calendar-day-border-radius)/2);
     overflow: auto;
@@ -29,7 +31,6 @@
     }
 
     .day.today {
-        background-color: color-mix(in srgb, var(--colorBrandBackground2) 22%, var(--colorNeutralBackground1));
         border-color: color-mix(in srgb, var(--colorBrandStroke1) 60%, transparent);
     }
 
@@ -38,6 +39,24 @@
         --colorBrandForeground1: var(--colorPaletteRedForeground1);
     }
 
+.date-short, .date-long {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 0 10px 0 999px;
+    padding: 0.1rem 0.4rem 0.2rem 0.8rem;
+    color: var(--colorNeutralForeground2);
+    background: color-mix(in srgb, var(--colorNeutralBackground3) 70%, transparent);
+}
+
+.today .date-short, .today .date-long {
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 0 10px 0 999px;
+    color: var(--colorNeutralForegroundOnBrand);
+    background: var(--colorBrandBackground);
+}
 
 .date-short {
     display: block;
