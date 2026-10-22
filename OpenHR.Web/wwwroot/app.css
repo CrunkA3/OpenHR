@@ -240,3 +240,25 @@ code {
     #main-menu fluent-button {
         margin-top: 0.5rem;
     }
+
+/* Dezenter, dynamischer Hintergrund der Startseite */
+.home-bg {
+    position: relative;
+    min-height: 100%;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent-fill-rest, #0f6cbd) 10%, transparent), transparent 55%),
+        radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--accent-fill-rest, #0f6cbd) 7%, transparent), transparent 55%),
+        radial-gradient(circle at 50% 100%, rgba(120, 90, 200, 0.06), transparent 60%);
+    background-size: 160% 160%, 180% 180%, 200% 200%;
+    animation: home-bg-drift 40s ease-in-out infinite alternate;
+}
+
+@keyframes home-bg-drift {
+    0%   { background-position: 0% 0%, 100% 100%, 50% 100%; }
+    100% { background-position: 100% 50%, 0% 30%, 50% 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-bg { animation: none; }
+}
