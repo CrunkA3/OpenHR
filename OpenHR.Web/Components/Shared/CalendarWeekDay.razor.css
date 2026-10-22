@@ -1,7 +1,6 @@
 /* CSS for CalendarWeekDay component */
 .day {
     flex: 1;
-    min-width: 0;
     border: 1px solid color-mix(in srgb, var(--colorNeutralStroke1) 50%, transparent);
     border-radius: 12px;
     margin: 0.5rem;

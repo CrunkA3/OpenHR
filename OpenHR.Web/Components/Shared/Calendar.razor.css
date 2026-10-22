@@ -30,14 +30,24 @@
     font-weight: 700;
 }
 
+.calendar-body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    scroll-snap-type: y mandatory;
+    overflow-y: auto;
+}
+
 @media(max-width: 960px) {
     .calendar-toolbar {
         flex-wrap: wrap;
         justify-content: flex-start;
     }
 
-    .calendar-toolbar ::deep .calendar-toolbar-title {
-        width: 100%;
-        order: -1;
-    }
+        .calendar-toolbar ::deep .calendar-toolbar-title {
+            width: 100%;
+            order: -1;
+        }
 }
