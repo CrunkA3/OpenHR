@@ -5,7 +5,6 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    background-color: var(--colorNeutralBackground1);
 }
 
 @media(max-width: 960px) {
