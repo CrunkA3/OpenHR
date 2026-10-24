@@ -240,3 +240,46 @@ code {
     #main-menu fluent-button {
         margin-top: 0.5rem;
     }
+
+/* Dezenter, dynamischer Hintergrund der Startseite */
+.content {
+    position: relative;
+    min-height: 100%;
+    border-radius: 12px;
+    background: radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent-fill-rest, #0f6cbd) 15%, transparent), transparent 55%), radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--accent-fill-rest, #0f6cbd) 7%, transparent), transparent 55%), radial-gradient(circle at 50% 100%, rgba(120, 90, 200, 0.06), transparent 60%);
+    background-size: 160% 160%, 180% 180%, 200% 200%;
+    animation: content-bg-drift 40s ease-in-out infinite alternate;
+}
+
+    .content::after {
+        /*<feTurbulence type'fractalNoise' baseFrequency='.8' />*/
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image: url('data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">\
+  <filter id="noise">\
+    <feTurbulence type="turbulence" baseFrequency="0.8" numOctaves="3" seed="2"/>\
+  </filter>\
+  <rect width="100%" height="100%" filter="url(%23noise)" />\
+</svg>');
+        opacity: 0.25;
+        mix-blend-mode: overlay;
+    }
+
+@keyframes content-bg-drift {
+    0% {
+        background-position: 0% 0%, 100% 100%, 50% 100%;
+    }
+
+    100% {
+        background-position: 100% 50%, 0% 30%, 50% 0%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .content {
+        animation: none;
+    }
+}
